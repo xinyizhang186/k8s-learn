@@ -1,0 +1,345 @@
+% !TEX program = xelatex
+% 获奖作品讲解与参赛经验分享
+% 编译方式：Overleaf 选择 XeLaTeX；本地执行 xelatex main.tex
+\documentclass[10pt,aspectratio=169]{beamer}
+
+\usetheme[
+  progressbar=frametitle,
+  numbering=fraction,
+  sectionpage=progressbar,
+  subsectionpage=none
+]{metropolis}
+
+\usepackage[UTF8]{ctex}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric}
+\usepackage{xcolor}
+
+\definecolor{accentblue}{HTML}{1F5D8F}
+\definecolor{accentgreen}{HTML}{2F7D62}
+\definecolor{accentorange}{HTML}{B66A22}
+\newcommand{\key}[1]{\textcolor{accentblue}{\textbf{#1}}}
+\newcommand{\result}[1]{\textcolor{accentgreen}{\textbf{#1}}}
+\newcommand{\risk}[1]{\textcolor{accentorange}{\textbf{#1}}}
+
+\title{从“能扫描”到“可信结论”}
+\subtitle{获奖作品讲解、参赛解题思路与经验分享}
+\author{参赛团队}
+\institute{漏洞扫描项目}
+\date{2026 年 8 月}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{今天分享什么}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+
+\section{作品概览}
+
+\begin{frame}{获奖作品：一页看懂}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.31\textwidth}
+    \begin{block}{要解决什么}
+      \small
+      面对大规模 C/C++ 源码，如何从海量代码中找到\textbf{值得验证}的安全风险。
+    \end{block}
+    \column{0.31\textwidth}
+    \begin{block}{核心做法}
+      \small
+      用三 Agent 分工完成\key{范围测绘}、\key{规则广筛}、\key{候选排序}，再用独立验证链路给出证据。
+    \end{block}
+    \column{0.31\textwidth}
+    \begin{block}{交付价值}
+      \small
+      不只输出扫描数量，而是区分\key{候选}、\key{假设}和\key{验证结论}，使结果可解释、可复盘。
+    \end{block}
+  \end{columns}
+
+  \vspace{0.9em}
+  \centering
+  \begin{tikzpicture}[
+    node distance=1cm,
+    box/.style={draw,rounded corners,minimum width=2.55cm,minimum height=1cm,align=center,thick},
+    arr/.style={-Stealth,thick,gray!75}
+  ]
+    \node[box,fill=blue!8] (a) {2536 个源码文件\\广泛测绘};
+    \node[box,fill=orange!10,right=of a] (b) {多智能体协作\\候选排序};
+    \node[box,fill=green!10,right=of b] (c) {AST + PoC\\验证证据};
+    \draw[arr] (a) -- (b);
+    \draw[arr] (b) -- (c);
+  \end{tikzpicture}
+\end{frame}
+
+\section{解题思路}
+
+\begin{frame}{解题起点：把赛题理解成“可信度”问题}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+    \begin{block}{表面任务}
+      对 C/C++ 源码进行漏洞扫描，找出风险点。
+    \end{block}
+    \column{0.48\textwidth}
+    \begin{alertblock}{真正难点}
+      扫描器很容易给出大量候选，但候选不等于漏洞，更不等于可复现的运行时问题。
+    \end{alertblock}
+  \end{columns}
+
+  \vspace{0.8em}
+  \centering
+  \begin{tikzpicture}[
+    node distance=1.1cm,
+    box/.style={draw,rounded corners,minimum width=2.45cm,minimum height=1cm,align=center,thick},
+    arr/.style={-Stealth,thick,gray!75}
+  ]
+    \node[box,fill=blue!8] (a) {代码规模大\\从哪里开始扫？};
+    \node[box,fill=orange!10,right=of a] (b) {规则候选多\\哪些值得相信？};
+    \node[box,fill=green!10,right=of b] (c) {运行环境不同\\怎样给出证据？};
+    \draw[arr] (a) -- (b);
+    \draw[arr] (b) -- (c);
+  \end{tikzpicture}
+
+  \vspace{0.8em}
+  \begin{exampleblock}{我们的解题目标}
+    不是追求“报得最多”，而是建立从\key{扫描范围}到\key{候选排序}再到\key{验证证据}的完整链路。
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{解题思路：先拆题，再写代码}
+  \centering
+  \begin{tikzpicture}[
+    every node/.style={font=\small},
+    step/.style={draw,rounded corners,minimum width=2.45cm,minimum height=1.35cm,align=center,thick},
+    arr/.style={-Stealth,thick,accentblue}
+  ]
+    \node[step,fill=blue!8] (s1) {1. 看数据\\漏洞在什么源码区域？};
+    \node[step,fill=green!8,right=0.55cm of s1] (s2) {2. 找共性\\哪些代码形态值得关注？};
+    \node[step,fill=orange!10,right=0.55cm of s2] (s3) {3. 建证据\\如何证明不是误报？};
+    \node[step,fill=purple!8,right=0.55cm of s3] (s4) {4. 回看结果\\哪些结论能诚实汇报？};
+    \draw[arr] (s1)--(s2);
+    \draw[arr] (s2)--(s3);
+    \draw[arr] (s3)--(s4);
+  \end{tikzpicture}
+
+  \vspace{1em}
+  \begin{tabular}{p{3.2cm}p{7.2cm}}
+    \toprule
+    \textbf{拆题问题} & \textbf{对应决策} \\
+    \midrule
+    扫描范围过大 & 先做攻击面测绘，让后续分析只处理相关源码文件 \\
+    正则候选过多 & 将“找候选”和“给候选排序”拆给不同 Agent \\
+    结论容易夸大 & 用 AST 定位和 CONTROL/TRIGGER PoC 将候选分级 \\
+    LLM 不稳定 & 让 LLM 只做可替换的语义辅助，并保留本地回退 \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\section{方法落地}
+
+\begin{frame}{方法总览：三 Agent 做三件不同的事}
+  \centering
+  \begin{tikzpicture}[
+    every node/.style={font=\small},
+    agent/.style={draw,rounded corners,minimum width=2.5cm,minimum height=1.25cm,align=center,thick},
+    arr/.style={-Stealth,thick,gray!80},
+    data/.style={font=\scriptsize,text=gray!65}
+  ]
+    \node[agent,fill=blue!10] (r) {Recon\\找哪些文件要扫};
+    \node[agent,fill=orange!12,right=1.2cm of r] (a) {Analyst-A\\找哪些代码行可疑};
+    \node[agent,fill=green!10,right=1.2cm of a] (b) {Analyst-B\\给候选排序};
+    \node[draw,rounded corners,fill=gray!10,minimum width=8.7cm,minimum height=.8cm,below=.75cm of a] (bb) {Blackboard：统一保存中间结果，前一 Agent 写入，后一 Agent 读取};
+    \draw[arr] (r) -- node[above,data]{api\_surface} (a);
+    \draw[arr] (a) -- node[above,data]{sast\_candidates} (b);
+    \draw[arr] (r.south) -- (bb.west);
+    \draw[arr] (a.south) -- (bb);
+    \draw[arr] (b.south) -- (bb.east);
+  \end{tikzpicture}
+
+  \vspace{0.8em}
+  \begin{block}{为什么这样分工？}
+    Recon 只负责范围，Analyst-A 只负责规则广筛，Analyst-B 只负责优先级。\
+    \key{文件} $\rightarrow$ \key{可疑代码行} $\rightarrow$ \key{待验证假设}，每一步都能回溯。
+  \end{block}
+\end{frame}
+
+\begin{frame}{三个 Agent 的核心逻辑}
+  \small
+  \begin{tabular}{p{2cm}p{3.2cm}p{5.7cm}}
+    \toprule
+    \textbf{Agent} & \textbf{输入与输出} & \textbf{核心方法} \\
+    \midrule
+    Recon & 代码目录 $\rightarrow$ 文件清单 & 用路径匹配找非测试 C/C++ 文件；记录模块、路径、算子注册与依赖信息。输出只表示“值得扫描”。 \\
+    Analyst-A & 文件清单 $\rightarrow$ 规则候选 & 逐行执行 CWE 规则；只有危险表达式、风险来源、附近无守卫同时满足才记录候选。输出仍可能误报。 \\
+    Analyst-B & 规则候选 $\rightarrow$ 高置信假设 & 查看局部上下文，检查守卫、可达性与代码差分，再用固定分数排序。输出是“优先验证项”，不是漏洞结论。 \\
+    \bottomrule
+  \end{tabular}
+
+  \vspace{0.8em}
+  \begin{exampleblock}{方法上的关键取舍}
+    将\risk{发现}与\risk{证明}分开：多智能体负责发现和排序；精确 AST 分析、PoC 与 Validator 负责给出证据等级。
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{从候选到证据：不把“命中”说成“漏洞”}
+  \centering
+  \begin{tikzpicture}[
+    every node/.style={font=\small},
+    box/.style={draw,rounded corners,minimum width=2.45cm,minimum height=1cm,align=center,thick},
+    arr/.style={-Stealth,thick,gray!75}
+  ]
+    \node[box,fill=blue!8] (h) {多智能体输出\\待验证假设};
+    \node[box,fill=orange!10,right=1cm of h] (s) {AST SAST\\精确定位风险路径};
+    \node[box,fill=green!10,right=1cm of s] (p) {PoC 对照输入\\CONTROL / TRIGGER};
+    \node[box,fill=red!9,right=1cm of p] (v) {Validator\\证据等级};
+    \draw[arr] (h)--(s);
+    \draw[arr] (s)--(p);
+    \draw[arr] (p)--(v);
+  \end{tikzpicture}
+
+  \vspace{0.9em}
+  \begin{tabular}{p{3.0cm}p{8.0cm}}
+    \toprule
+    \textbf{术语} & \textbf{本项目中的含义} \\
+    \midrule
+    候选 / 假设 & 代码形态可疑，或值得优先复核；不能直接宣称存在漏洞 \\
+    代码级确认 & TRIGGER 到达目标路径，但修复版运行库的守卫拦截了危险操作 \\
+    PROVEN & TRIGGER 捕获原生崩溃信号；这是更高等级的运行时复现证据 \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\section{结果与证据}
+
+\begin{frame}{结果展示：两条链路，各自回答不同问题}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+    \begin{block}{精确验证链路：run\_pipeline.py}
+      \centering
+      \large \result{634 $\rightarrow$ 98 $\rightarrow$ 1592 $\rightarrow$ 6/6}
+      \vspace{0.5em}
+      \begin{itemize}\small
+        \item 98 个攻击面文件进入 AST SAST
+        \item 1592 条候选用于覆盖核验
+        \item 6 个指定目标均被扫描命中
+        \item 6 个固定 PoC 得到代码级确认
+      \end{itemize}
+    \end{block}
+    \column{0.48\textwidth}
+    \begin{block}{多智能体链路：coordinator.py}
+      \centering
+      \large \result{2536 文件 $\rightarrow$ 320 高置信假设}
+      \vspace{0.5em}
+      \begin{itemize}\small
+        \item Recon 做更广的源码测绘
+        \item A 做规则广筛，B 做候选排序
+        \item 过程记录在 Blackboard 与 trace
+        \item 输出用于优先复核，而非直接报漏洞
+      \end{itemize}
+    \end{block}
+  \end{columns}
+
+  \vspace{0.7em}
+  \begin{alertblock}{诚实汇报结果}
+    当前运行库已修复历史问题：\result{6 条代码级确认 + 1 条 NEGATIVE}，\risk{PROVEN = 0}。\
+    这说明验证路径可达，但不能把结果说成 6 条运行时崩溃复现。
+  \end{alertblock}
+\end{frame}
+
+\section{参赛复盘与经验}
+
+\begin{frame}{参赛过程：三次迭代让结论更可信}
+  \centering
+  \begin{tikzpicture}[
+    every node/.style={font=\small},
+    step/.style={draw,rounded corners,minimum width=3.25cm,minimum height=1.45cm,align=center,thick},
+    arr/.style={-Stealth,thick,accentblue}
+  ]
+    \node[step,fill=blue!8] (s1) {第一次：先跑通\\建立可量化的扫描基线};
+    \node[step,fill=orange!10,right=.7cm of s1] (s2) {第二次：再分工\\加入测绘与候选排序};
+    \node[step,fill=green!10,right=.7cm of s2] (s3) {第三次：查边界\\核对每个结论的证据等级};
+    \draw[arr] (s1)--(s2);
+    \draw[arr] (s2)--(s3);
+  \end{tikzpicture}
+
+  \vspace{0.9em}
+  \begin{tabular}{p{3cm}p{8.3cm}}
+    \toprule
+    \textbf{迭代重点} & \textbf{得到的经验} \\
+    \midrule
+    跑通基础链路 & 先得到可复现的扫描与验证结果，再扩展功能；否则很难判断改动是否有效。 \\
+    引入多 Agent & 将“找文件、找候选、排优先级”分开后，逻辑和中间结果更容易解释。 \\
+    审核结果表述 & 把代码级确认、PROVEN、固定 PoC 等概念分开，避免用漂亮数字掩盖证据边界。 \\
+    \bottomrule
+  \end{tabular}
+\end{frame}
+
+\begin{frame}{三个最重要的复盘：从踩坑中得到什么}
+  \begin{enumerate}
+    \item \textbf{候选数量不是成果数量。} 正则扫描能快速扩大覆盖，但候选必须经过源码复核和动态验证。
+    \vspace{0.5em}
+    \item \textbf{固定 PoC 是验证集，不是自动生成能力。} 它适合说明已知目标的验证闭环，但不能包装成“从所有候选自动生成利用”。
+    \vspace{0.5em}
+    \item \textbf{反馈环要区分“触发”与“自适应”。} 当前实现会触发原规则重扫，尚未让学习模式自动改写规则；汇报必须如实说明。
+  \end{enumerate}
+
+  \vspace{0.7em}
+  \begin{exampleblock}{比赛中最有价值的原则}
+    把每一个指标都问一遍：它是\key{扫描覆盖}、\key{优先级}，还是\key{运行时证据}？三者不能混用。
+  \end{exampleblock}
+\end{frame}
+
+\begin{frame}{经验分享：下一次遇到类似赛题怎么做}
+  \begin{columns}[T,onlytextwidth]
+    \column{0.48\textwidth}
+    \begin{block}{先做这四件事}
+      \begin{enumerate}\small
+        \item 先确认评测真正需要的是覆盖、发现还是复现
+        \item 用最小可运行链路尽早产出第一份结果
+        \item 将“候选、假设、确认”定义成不同等级
+        \item 为每一个数字保留来源文件和日志
+      \end{enumerate}
+    \end{block}
+    \column{0.48\textwidth}
+    \begin{block}{避免这四件事}
+      \begin{enumerate}\small
+        \item 不把规则命中直接说成漏洞
+        \item 不把预置 PoC 说成全自动生成
+        \item 不把 LLM 输出当作最终证据
+        \item 不为了“智能体”而增加没有落地的 Agent
+      \end{enumerate}
+    \end{block}
+  \end{columns}
+
+  \vspace{0.8em}
+  \begin{alertblock}{可复用的方法论}
+    \textbf{先建立可信证据链，再逐步扩大自动化范围。} 这比先堆功能、再解释结果更稳。
+  \end{alertblock}
+\end{frame}
+
+\section{总结}
+
+\begin{frame}{总结：作品的价值不只是一组扫描数字}
+  \begin{block}{作品讲解的核心}
+    我们将复杂源码审计拆为可协作、可解释、可验证的步骤：\
+    \key{Recon 定范围} $\rightarrow$ \key{Analyst-A 找候选} $\rightarrow$ \key{Analyst-B 排优先级} $\rightarrow$ \key{AST/PoC 给证据}。
+  \end{block}
+
+  \vspace{0.6em}
+  \begin{itemize}
+    \item 解题思路：先拆解“范围、候选、证据”三个问题，再选择对应技术方法
+    \item 工程收获：Blackboard 让多 Agent 的中间结果可追溯、可替换、可复盘
+    \item 经验结论：真实、分级、可复现的结论，比夸大的自动化能力更有说服力
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[standout]
+  感谢聆听
+  
+  \vspace{0.5em}
+  \normalsize 欢迎交流解题思路与参赛经验
+\end{frame}
+
+\end{document}
