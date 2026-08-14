@@ -1,0 +1,13 @@
+{
+  "section_theme": 9,
+  "section_tint": 0.7999816888943144,
+  "header_theme": 3,
+  "header_tint": 0.7999816888943144,
+  "risk_header_fill": "D9E1F2",
+  "change_header_fill": "8064A2",
+  "header_font": "FFFFFF",
+  "body_font": "202124",
+  "border": "A9B8C3",
+  "version_analysis_widths": [16, 40, 88, 15, 60],
+  "feature_changes_widths": [16, 11, 28, 14, 13, 12, 9, 23, 34, 46, 30, 52, 11, 38]
+}
