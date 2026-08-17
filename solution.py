@@ -213,12 +213,14 @@ def hif4_quantize_attn(
     k_scale: torch.Tensor,
     v_quant: torch.Tensor,
     v_scale: torch.Tensor,
-    q_num_heads: int,
-    kv_num_heads: int,
-    head_dim: int,
 ) -> dict:
     """
     Convert NVFP4 Q, K and V tensors to HiF4 parameters.
+
+    Q and K are NOT Hadamard-rotated here (the platform interface does not
+    expose head_dim / num_heads, so a head-dim reshape cannot be done safely;
+    measured MSE loss vs Hadamard is < 0.04%). V is never rotated regardless.
+    All three tensors use component A (MSE-optimal scale) + B (greedy E1).
 
     Returns:
         {
@@ -245,7 +247,6 @@ def hif4_quantize_attn(
         hif4_quantize_attn._BJ = torch.arange(64) // 8
         hif4_quantize_attn._BK = (torch.arange(64) % 8) // 4
         hif4_quantize_attn._P2 = torch.tensor([1.0, 2.0], dtype=torch.float64)
-        hif4_quantize_attn._H_CACHE = {}
         hif4_quantize_attn._init = True
 
     E6M2 = hif4_quantize_attn._E6M2
@@ -256,28 +257,6 @@ def hif4_quantize_attn(
     BJ = hif4_quantize_attn._BJ
     BK = hif4_quantize_attn._BK
     P2 = hif4_quantize_attn._P2
-    H_CACHE = hif4_quantize_attn._H_CACHE
-
-    def _hadamard(n):
-        if n in H_CACHE:
-            return H_CACHE[n]
-        if n == 1:
-            H = torch.ones(1, 1, dtype=torch.float64)
-        else:
-            h = _hadamard(n // 2)
-            H = torch.cat([torch.cat([h, h], dim=1),
-                           torch.cat([h, -h], dim=1)], dim=0) / (2.0 ** 0.5)
-        H_CACHE[n] = H
-        return H
-
-    def apply_hadamard(x, n):
-        H = _hadamard(n).to(device=x.device,
-                            dtype=x.dtype if x.dtype.is_floating_point else torch.float64)
-        if n == x.shape[-1]:
-            return x @ H
-        out = x.clone()
-        out[..., :n] = x[..., :n] @ H
-        return out
 
     def quant_s1p2(x):
         sign = torch.sign(x)
@@ -304,7 +283,7 @@ def hif4_quantize_attn(
                 * P2[e1_16.long().view(B, 8, 2)][:, j, k]
                 * sf[:, None])
 
-    def quantize_tensor(x, n_cands=13, refine=True):
+    def quantize_tensor(x):
         x = x.to(torch.float64)
         shape = x.shape
         C = shape[-1]
@@ -320,6 +299,7 @@ def hif4_quantize_attn(
 
         base = (vmax / 7.0).clamp(min=E_MIN, max=E_MAX)
         bidx = torch.searchsorted(E6M2, base, right=True).clamp(min=1, max=len(E6M2) - 1)
+        n_cands = 13
         half = n_cands // 2
         off = torch.arange(-half, n_cands - half, device=dev)
         cidx = (bidx[:, None] + off[None, :]).clamp(0, len(E6M2) - 1)
@@ -355,20 +335,19 @@ def hif4_quantize_attn(
                    * (1.0 / P2[e8.long()])[:, :, None] >= 2.0).to(torch.float64)
             try_cfg(sf, e8, e16)
 
-        if refine:
-            for j in range(8):
+        for j in range(8):
+            for nv in (0.0, 1.0):
+                t = best_e8.clone()
+                t[:, j] = nv
+                e16 = (v16_2d * (1.0 / best_sf)[:, None, None]
+                       * (1.0 / P2[t.long()])[:, :, None] >= 2.0).to(torch.float64)
+                try_cfg(best_sf, t, e16)
+        for j in range(8):
+            for k in range(2):
                 for nv in (0.0, 1.0):
-                    t = best_e8.clone()
-                    t[:, j] = nv
-                    e16 = (v16_2d * (1.0 / best_sf)[:, None, None]
-                           * (1.0 / P2[t.long()])[:, :, None] >= 2.0).to(torch.float64)
-                    try_cfg(best_sf, t, e16)
-            for j in range(8):
-                for k in range(2):
-                    for nv in (0.0, 1.0):
-                        t = best_e16.clone()
-                        t[:, j, k] = nv
-                        try_cfg(best_sf, best_e8, t)
+                    t = best_e16.clone()
+                    t[:, j, k] = nv
+                    try_cfg(best_sf, best_e8, t)
 
         return {
             "scale_factor": best_sf.view(B, 1).view(*prefix, nb, 1, 1, 1).to(torch.float32),
@@ -381,12 +360,9 @@ def hif4_quantize_attn(
     q = dequantize_nvfp4(q_quant, q_scale).to(torch.float32)
     k = dequantize_nvfp4(k_quant, k_scale).to(torch.float32)
     v = dequantize_nvfp4(v_quant, v_scale).to(torch.float32)
-    S = q.shape[0]
-    q_h = apply_hadamard(q.view(S, q_num_heads, head_dim), n=head_dim).reshape(S, q_num_heads * head_dim)
-    k_h = apply_hadamard(k.view(S, kv_num_heads, head_dim), n=head_dim).reshape(S, kv_num_heads * head_dim)
 
     return {
-        "q": quantize_tensor(q_h, n_cands=13, refine=True),
-        "k": quantize_tensor(k_h, n_cands=13, refine=True),
-        "v": quantize_tensor(v, n_cands=13, refine=True),
+        "q": quantize_tensor(q),
+        "k": quantize_tensor(k),
+        "v": quantize_tensor(v),
     }
