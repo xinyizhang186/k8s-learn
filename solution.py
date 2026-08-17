@@ -1,236 +1,392 @@
-"""solution.py — NVFP4 -> HiF4 conversion (self-contained, single-file submission).
-
-Algorithm (idea.md):
-  A) MSE-optimal E6M2 scale_factor grid search (13 candidates around vmax/7)
-  C) Hadamard orthogonal transform on the shared dot-dim before quantization
-  B) Greedy E1_8 / E1_16 micro-exponent refinement (kept on for max MSE gain)
-
-NVFP4 dequant:  quant * scale_float (E4M3 per-16-block).
-HiF4 dequant:   sign * mant * scale_lv2 * scale_lv3 * scale_factor.
-
-Per 64-element block, flat index i in [0,64):
-    j = i // 8, k = (i % 8) // 4, m = i % 4
-    dq[i] = sign[j,k,m] * mant[j,k,m] * scale_lv2[j] * scale_lv3[j,k] * scale_factor
-"""
-from __future__ import annotations
-
 import torch
 
-# ------------------------------------------------------------------- NVFP4 --
-def dequantize_nvfp4(quant, scale_float, blk_size: int = 16):
-    x = quant.unflatten(-1, (-1, blk_size))
-    return (x * scale_float.unsqueeze(-1)).flatten(-2, -1).to(torch.bfloat16)
+
+def dequantize_nvfp4(
+    quant_float: torch.Tensor,
+    scale_float: torch.Tensor,
+    blk_size: int = 16,
+) -> torch.Tensor:
+    """
+    Dequantize an NVFP4 tensor to BF16.
+
+    Args:
+        quant_float:
+            Quantized values. The last dimension must be divisible by blk_size.
+        scale_float:
+            Per-block scale values.
+        blk_size:
+            NVFP4 block size. The competition input uses 16.
+    Returns:
+        A BF16 tensor with the same logical shape as quant_float.
+    """
+    last_dim = quant_float.shape[-1]
+    if last_dim % blk_size != 0:
+        raise ValueError(f"Last dimension {last_dim} is not divisible by "
+                         f"NVFP4 block size {blk_size}")
+    x = quant_float.unflatten(-1, (-1, blk_size))
+    result = x * scale_float.unsqueeze(-1)
+    return result.flatten(-2, -1).to(torch.bfloat16)
 
 
-# --------------------------------------------------------------- Hadamard --
-_H_CACHE: dict[int, torch.Tensor] = {}
+def hif4_quantize(
+    w_quant: torch.Tensor,
+    w_scale: torch.Tensor,
+    a_quant: torch.Tensor,
+    a_scale: torch.Tensor,
+) -> dict:
+    """
+    Convert NVFP4 weight and activation tensors to HiF4 parameters.
 
+    Returns:
+        {
+            "weight": weight_params,
+            "activation": activation_params,
+        }
+    """
+    if not hasattr(hif4_quantize, "_init"):
+        lut = []
+        for e in range(-48, 16):
+            for m in range(4):
+                if e == 15 and m == 3:
+                    continue
+                lut.append((2.0 ** e) * (1.0 + m / 4.0))
+        lut.sort()
+        hif4_quantize._E6M2 = torch.tensor(lut, dtype=torch.float64)
+        hif4_quantize._E_MIN = float(hif4_quantize._E6M2[0].item())
+        hif4_quantize._E_MAX = float(hif4_quantize._E6M2[-1].item())
+        hif4_quantize._MAGS = torch.tensor(
+            [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75], dtype=torch.float64)
+        hif4_quantize._BNDS = torch.tensor(
+            [0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625], dtype=torch.float64)
+        hif4_quantize._BJ = torch.arange(64) // 8
+        hif4_quantize._BK = (torch.arange(64) % 8) // 4
+        hif4_quantize._P2 = torch.tensor([1.0, 2.0], dtype=torch.float64)
+        hif4_quantize._H_CACHE = {}
+        hif4_quantize._init = True
 
-def _hadamard_matrix(n: int) -> torch.Tensor:
-    if n in _H_CACHE:
-        return _H_CACHE[n]
-    if n == 1:
-        H = torch.ones(1, 1, dtype=torch.float64)
-    else:
-        h = _hadamard_matrix(n // 2)
-        H = torch.cat([torch.cat([h, h], dim=1),
-                       torch.cat([h, -h], dim=1)], dim=0) / (2.0 ** 0.5)
-    _H_CACHE[n] = H
-    return H
+    E6M2 = hif4_quantize._E6M2
+    E_MIN = hif4_quantize._E_MIN
+    E_MAX = hif4_quantize._E_MAX
+    MAGS = hif4_quantize._MAGS
+    BNDS = hif4_quantize._BNDS
+    BJ = hif4_quantize._BJ
+    BK = hif4_quantize._BK
+    P2 = hif4_quantize._P2
+    H_CACHE = hif4_quantize._H_CACHE
 
+    def _hadamard(n):
+        if n in H_CACHE:
+            return H_CACHE[n]
+        if n == 1:
+            H = torch.ones(1, 1, dtype=torch.float64)
+        else:
+            h = _hadamard(n // 2)
+            H = torch.cat([torch.cat([h, h], dim=1),
+                           torch.cat([h, -h], dim=1)], dim=0) / (2.0 ** 0.5)
+        H_CACHE[n] = H
+        return H
 
-def apply_hadamard(x: torch.Tensor, n: int) -> torch.Tensor:
-    """Apply n x n Hadamard to the last dim of x (x @ H, H @ H^T = I).
-    n must be a power of 2; if n < x.shape[-1] only the first n cols are rotated."""
-    H = _hadamard_matrix(n).to(device=x.device,
-                               dtype=x.dtype if x.dtype.is_floating_point else torch.float64)
-    if n == x.shape[-1]:
-        return x @ H
-    out = x.clone()
-    out[..., :n] = x[..., :n] @ H
-    return out
+    def apply_hadamard(x, n):
+        H = _hadamard(n).to(device=x.device,
+                            dtype=x.dtype if x.dtype.is_floating_point else torch.float64)
+        if n == x.shape[-1]:
+            return x @ H
+        out = x.clone()
+        out[..., :n] = x[..., :n] @ H
+        return out
 
+    def quant_s1p2(x):
+        sign = torch.sign(x)
+        mant = MAGS[torch.searchsorted(BNDS, x.abs().clamp(max=1.75),
+                                       right=True).clamp(min=0, max=7)]
+        sign = torch.where(mant == 0.0, torch.zeros_like(sign), sign)
+        return sign, mant
 
-# --------------------------------------------------------------- E6M2/S1P2 --
-def _build_e6m2_lut() -> torch.Tensor:
-    vals = []
-    for e in range(-48, 16):
-        for m in range(4):
-            if e == 15 and m == 3:
-                continue  # 57344 is NaN in E6M2
-            vals.append((2.0 ** e) * (1.0 + m / 4.0))
-    vals.sort()
-    return torch.tensor(vals, dtype=torch.float64)
+    def quant_blk(blocks, sf, e1_8, e1_16):
+        B = blocks.shape[0]
+        j = BJ.to(blocks.device)
+        k = BK.to(blocks.device)
+        combined = sf[:, None] * P2[e1_8.long()][:, j] * \
+                   P2[e1_16.long().view(B, 8, 2)][:, j, k]
+        s, m = quant_s1p2(blocks / combined)
+        return s.view(B, 8, 2, 4), m.view(B, 8, 2, 4)
 
+    def dequant_blk(sf, e1_8, e1_16, sign, mant):
+        B = sf.shape[0]
+        j = BJ.to(sf.device)
+        k = BK.to(sf.device)
+        return ((sign * mant).view(B, 64)
+                * P2[e1_8.long()][:, j]
+                * P2[e1_16.long().view(B, 8, 2)][:, j, k]
+                * sf[:, None])
 
-E6M2_LUT = _build_e6m2_lut()
-E6M2_MIN = float(E6M2_LUT[0].item())
-E6M2_MAX = float(E6M2_LUT[-1].item())
+    def quantize_tensor(x, n_cands=13, refine=True):
+        x = x.to(torch.float64)
+        shape = x.shape
+        C = shape[-1]
+        prefix = shape[:-1]
+        nb = C // 64
+        blocks = x.reshape(-1, 64)
+        B = blocks.shape[0]
+        dev = blocks.device
 
-S1P2_MAGS = torch.tensor([0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75], dtype=torch.float64)
-S1P2_BOUNDS = torch.tensor([0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625], dtype=torch.float64)
+        v16 = blocks.view(B, 16, 4).abs().amax(dim=2)
+        v8 = v16.view(B, 8, 2).amax(dim=2)
+        vmax = v8.amax(dim=1)
 
-_BLK_J = torch.arange(64) // 8
-_BLK_K = (torch.arange(64) % 8) // 4
-_POW2 = torch.tensor([1.0, 2.0], dtype=torch.float64)
+        base = (vmax / 7.0).clamp(min=E_MIN, max=E_MAX)
+        bidx = torch.searchsorted(E6M2, base, right=True).clamp(min=1, max=len(E6M2) - 1)
+        half = n_cands // 2
+        off = torch.arange(-half, n_cands - half, device=dev)
+        cidx = (bidx[:, None] + off[None, :]).clamp(0, len(E6M2) - 1)
+        sf_c = E6M2[cidx]
 
+        best_mse = torch.full((B,), float('inf'), device=dev)
+        best_sf = torch.zeros(B, dtype=torch.float64, device=dev)
+        best_e8 = torch.zeros(B, 8, dtype=torch.float64, device=dev)
+        best_e16 = torch.zeros(B, 8, 2, dtype=torch.float64, device=dev)
+        best_s = torch.zeros(B, 8, 2, 4, dtype=torch.float64, device=dev)
+        best_m = torch.zeros(B, 8, 2, 4, dtype=torch.float64, device=dev)
+        v16_2d = v16.view(B, 8, 2)
 
-def _quantize_to_s1p2(x: torch.Tensor):
-    sign = torch.sign(x)
-    mant = S1P2_MAGS[torch.searchsorted(S1P2_BOUNDS, x.abs().clamp(max=1.75),
-                                         right=True).clamp(min=0, max=7)]
-    sign = torch.where(mant == 0.0, torch.zeros_like(sign), sign)
-    return sign, mant
+        def try_cfg(sf, e8, e16):
+            nonlocal best_mse, best_sf, best_e8, best_e16, best_s, best_m
+            s, m = quant_blk(blocks, sf, e8, e16)
+            dq = dequant_blk(sf, e8, e16, s, m)
+            mse = ((dq - blocks) ** 2).mean(dim=1)
+            better = mse < best_mse
+            _b = better[:, None, None, None]
+            best_mse = torch.where(better, mse, best_mse)
+            best_sf = torch.where(better, sf, best_sf)
+            best_e8 = torch.where(better[:, None], e8, best_e8)
+            best_e16 = torch.where(better[:, None, None], e16, best_e16)
+            best_s = torch.where(_b, s, best_s)
+            best_m = torch.where(_b, m, best_m)
 
+        for c in range(n_cands):
+            sf = sf_c[:, c]
+            rec = 1.0 / sf
+            e8 = (v8 * rec[:, None] >= 4.0).to(torch.float64)
+            e16 = (v16_2d * rec[:, None, None]
+                   * (1.0 / P2[e8.long()])[:, :, None] >= 2.0).to(torch.float64)
+            try_cfg(sf, e8, e16)
 
-def _quant_block(blocks, sf, e1_8, e1_16):
-    """Quantize (B, 64) blocks to S1P2 given fixed scales. Returns (sign, mant) (B, 8, 2, 4)."""
-    B = blocks.shape[0]
-    j = _BLK_J.to(blocks.device)
-    k = _BLK_K.to(blocks.device)
-    combined = sf[:, None] * _POW2[e1_8.long()][:, j] * _POW2[e1_16.long().view(B, 8, 2)][:, j, k]
-    sign_flat, mant_flat = _quantize_to_s1p2(blocks / combined)
-    return sign_flat.view(B, 8, 2, 4), mant_flat.view(B, 8, 2, 4)
-
-
-def _dequant_block(sf, e1_8, e1_16, sign, mant) -> torch.Tensor:
-    """Reconstruct (B, 64) from HiF4 params — matches self_check dequantize_hif4."""
-    B = sf.shape[0]
-    j = _BLK_J.to(sf.device)
-    k = _BLK_K.to(sf.device)
-    return ((sign * mant).view(B, 64)
-            * _POW2[e1_8.long()][:, j]
-            * _POW2[e1_16.long().view(B, 8, 2)][:, j, k]
-            * sf[:, None])
-
-
-# --------------------------------------------------------- quantize_blocks --
-def quantize_blocks(blocks: torch.Tensor, n_scale_cands: int = 13,
-                    refine_e1: bool = True) -> dict:
-    """Component A (scale grid search) + Component B (greedy E1 refinement)."""
-    blocks = blocks.to(torch.float64)
-    B = blocks.shape[0]
-    dev = blocks.device
-
-    # Tree reduction for peak magnitudes (Algorithm 1 lines 1-7).
-    v16 = blocks.view(B, 16, 4).abs().amax(dim=2)   # (B, 16)
-    v8 = v16.view(B, 8, 2).amax(dim=2)              # (B, 8)
-    vmax = v8.amax(dim=1)                            # (B,)
-
-    # Component A: enumerate E6M2 candidates around vmax/7 and pick min-MSE.
-    base = (vmax / 7.0).clamp(min=E6M2_MIN, max=E6M2_MAX)
-    base_idx = torch.searchsorted(E6M2_LUT, base, right=True).clamp(min=1, max=len(E6M2_LUT) - 1)
-    half = n_scale_cands // 2
-    offsets = torch.arange(-half, n_scale_cands - half, device=dev)
-    cand_idx = (base_idx[:, None] + offsets[None, :]).clamp(0, len(E6M2_LUT) - 1)
-    sf_cands = E6M2_LUT[cand_idx]                    # (B, n_scale_cands)
-
-    best_mse = torch.full((B,), float('inf'), device=dev)
-    best_sf = torch.zeros(B, dtype=torch.float64, device=dev)
-    best_e1_8 = torch.zeros(B, 8, dtype=torch.float64, device=dev)
-    best_e1_16 = torch.zeros(B, 8, 2, dtype=torch.float64, device=dev)
-    best_sign = torch.zeros(B, 8, 2, 4, dtype=torch.float64, device=dev)
-    best_mant = torch.zeros(B, 8, 2, 4, dtype=torch.float64, device=dev)
-
-    v16_2d = v16.view(B, 8, 2)
-
-    def try_config(sf, e1_8, e1_16):
-        """Quantize + dequant + MSE for a candidate config; updates best_* in place."""
-        nonlocal best_mse, best_sf, best_e1_8, best_e1_16, best_sign, best_mant
-        sign, mant = _quant_block(blocks, sf, e1_8, e1_16)
-        dq = _dequant_block(sf, e1_8, e1_16, sign, mant)
-        mse = ((dq - blocks) ** 2).mean(dim=1)
-        better = mse < best_mse
-        _b = better[:, None, None, None]
-        best_mse = torch.where(better, mse, best_mse)
-        best_sf = torch.where(better, sf, best_sf)
-        best_e1_8 = torch.where(better[:, None], e1_8, best_e1_8)
-        best_e1_16 = torch.where(better[:, None, None], e1_16, best_e1_16)
-        best_sign = torch.where(_b, sign, best_sign)
-        best_mant = torch.where(_b, mant, best_mant)
-
-    # Stage 2: scale grid search with standard threshold E1 heuristic.
-    for c in range(n_scale_cands):
-        sf = sf_cands[:, c]
-        rec = 1.0 / sf
-        e1_8 = (v8 * rec[:, None] >= 4.0).to(torch.float64)
-        e1_16 = (v16_2d * rec[:, None, None]
-                 * (1.0 / _POW2[e1_8.long()])[:, :, None] >= 2.0).to(torch.float64)
-        try_config(sf, e1_8, e1_16)
-
-    # Stage 3 (Component B): greedy E1_8 then E1_16 bit flips.
-    if refine_e1:
-        for j in range(8):
-            for nv in (0.0, 1.0):
-                t = best_e1_8.clone()
-                t[:, j] = nv
-                e1_16 = (v16_2d * (1.0 / best_sf)[:, None, None]
-                         * (1.0 / _POW2[t.long()])[:, :, None] >= 2.0).to(torch.float64)
-                try_config(best_sf, t, e1_16)
-        for j in range(8):
-            for k in range(2):
+        if refine:
+            for j in range(8):
                 for nv in (0.0, 1.0):
-                    t = best_e1_16.clone()
-                    t[:, j, k] = nv
-                    try_config(best_sf, best_e1_8, t)
+                    t = best_e8.clone()
+                    t[:, j] = nv
+                    e16 = (v16_2d * (1.0 / best_sf)[:, None, None]
+                           * (1.0 / P2[t.long()])[:, :, None] >= 2.0).to(torch.float64)
+                    try_cfg(best_sf, t, e16)
+            for j in range(8):
+                for k in range(2):
+                    for nv in (0.0, 1.0):
+                        t = best_e16.clone()
+                        t[:, j, k] = nv
+                        try_cfg(best_sf, best_e8, t)
 
-    return {
-        "scale_factor": best_sf.view(B, 1),
-        "scale_lv2": _POW2[best_e1_8.long()],
-        "scale_lv3": _POW2[best_e1_16.long()],
-        "sign": best_sign,
-        "mant": best_mant,
-    }
+        return {
+            "scale_factor": best_sf.view(B, 1).view(*prefix, nb, 1, 1, 1).to(torch.float32),
+            "scale_lv2": P2[best_e8.long()].view(*prefix, nb, 8, 1, 1).to(torch.float32),
+            "scale_lv3": P2[best_e16.long()].view(*prefix, nb, 8, 2, 1).to(torch.float32),
+            "sign": best_s.view(*prefix, nb, 8, 2, 4).to(torch.float32),
+            "mant": best_m.view(*prefix, nb, 8, 2, 4).to(torch.float32),
+        }
 
-
-def quantize_tensor(x: torch.Tensor, n_scale_cands: int = 13,
-                    refine_e1: bool = True) -> dict:
-    """Quantize (..., C) tensor (C % 64 == 0) to HiF4 params with required shapes."""
-    x = x.to(torch.float64)
-    shape = x.shape
-    C = shape[-1]
-    if C % 64 != 0:
-        raise ValueError(f"Last dim {C} not divisible by HiF4 block size 64")
-    prefix = shape[:-1]
-    nb = C // 64
-    out = quantize_blocks(x.reshape(-1, 64), n_scale_cands=n_scale_cands, refine_e1=refine_e1)
-    return {
-        "scale_factor": out["scale_factor"].view(*prefix, nb, 1, 1, 1).to(torch.float32),
-        "scale_lv2": out["scale_lv2"].view(*prefix, nb, 8, 1, 1).to(torch.float32),
-        "scale_lv3": out["scale_lv3"].view(*prefix, nb, 8, 2, 1).to(torch.float32),
-        "sign": out["sign"].view(*prefix, nb, 8, 2, 4).to(torch.float32),
-        "mant": out["mant"].view(*prefix, nb, 8, 2, 4).to(torch.float32),
-    }
-
-
-# ----------------------------------------------------------- Public API --
-def hif4_quantize(w_quant, w_scale, a_quant, a_scale) -> dict:
-    """Problem 1 (Linear A@W^T): same Hadamard H_K on K-dim of both operands
-    (MatMul invariance via H @ H^T = I), then components A+B."""
     weight = dequantize_nvfp4(w_quant, w_scale).to(torch.float32)
     activation = dequantize_nvfp4(a_quant, a_scale).to(torch.float32)
     K = weight.shape[-1]
     weight_h = apply_hadamard(weight, n=K).to(torch.float32)
     activation_h = apply_hadamard(activation, n=K).to(torch.float32)
+
     return {
-        "weight": quantize_tensor(weight_h, n_scale_cands=13, refine_e1=True),
-        "activation": quantize_tensor(activation_h, n_scale_cands=13, refine_e1=True),
+        "weight": quantize_tensor(weight_h, n_cands=13, refine=True),
+        "activation": quantize_tensor(activation_h, n_cands=13, refine=True),
     }
 
 
-def hif4_quantize_attn(q_quant, q_scale, k_quant, k_scale, v_quant, v_scale,
-                       q_num_heads: int, kv_num_heads: int, head_dim: int) -> dict:
-    """Problem 2 (GQA): same Hadamard H_head_dim on Q and K head_dim axis
-    (preserves per-head Q@K^T, hence softmax and output). V is NOT rotated:
-    (softmax @ V) @ H != softmax @ V would change output column order."""
+def hif4_quantize_attn(
+    q_quant: torch.Tensor,
+    q_scale: torch.Tensor,
+    k_quant: torch.Tensor,
+    k_scale: torch.Tensor,
+    v_quant: torch.Tensor,
+    v_scale: torch.Tensor,
+    q_num_heads: int,
+    kv_num_heads: int,
+    head_dim: int,
+) -> dict:
+    """
+    Convert NVFP4 Q, K and V tensors to HiF4 parameters.
+
+    Returns:
+        {
+            "q": q_params,
+            "k": k_params,
+            "v": v_params,
+        }
+    """
+    if not hasattr(hif4_quantize_attn, "_init"):
+        lut = []
+        for e in range(-48, 16):
+            for m in range(4):
+                if e == 15 and m == 3:
+                    continue
+                lut.append((2.0 ** e) * (1.0 + m / 4.0))
+        lut.sort()
+        hif4_quantize_attn._E6M2 = torch.tensor(lut, dtype=torch.float64)
+        hif4_quantize_attn._E_MIN = float(hif4_quantize_attn._E6M2[0].item())
+        hif4_quantize_attn._E_MAX = float(hif4_quantize_attn._E6M2[-1].item())
+        hif4_quantize_attn._MAGS = torch.tensor(
+            [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75], dtype=torch.float64)
+        hif4_quantize_attn._BNDS = torch.tensor(
+            [0.125, 0.375, 0.625, 0.875, 1.125, 1.375, 1.625], dtype=torch.float64)
+        hif4_quantize_attn._BJ = torch.arange(64) // 8
+        hif4_quantize_attn._BK = (torch.arange(64) % 8) // 4
+        hif4_quantize_attn._P2 = torch.tensor([1.0, 2.0], dtype=torch.float64)
+        hif4_quantize_attn._H_CACHE = {}
+        hif4_quantize_attn._init = True
+
+    E6M2 = hif4_quantize_attn._E6M2
+    E_MIN = hif4_quantize_attn._E_MIN
+    E_MAX = hif4_quantize_attn._E_MAX
+    MAGS = hif4_quantize_attn._MAGS
+    BNDS = hif4_quantize_attn._BNDS
+    BJ = hif4_quantize_attn._BJ
+    BK = hif4_quantize_attn._BK
+    P2 = hif4_quantize_attn._P2
+    H_CACHE = hif4_quantize_attn._H_CACHE
+
+    def _hadamard(n):
+        if n in H_CACHE:
+            return H_CACHE[n]
+        if n == 1:
+            H = torch.ones(1, 1, dtype=torch.float64)
+        else:
+            h = _hadamard(n // 2)
+            H = torch.cat([torch.cat([h, h], dim=1),
+                           torch.cat([h, -h], dim=1)], dim=0) / (2.0 ** 0.5)
+        H_CACHE[n] = H
+        return H
+
+    def apply_hadamard(x, n):
+        H = _hadamard(n).to(device=x.device,
+                            dtype=x.dtype if x.dtype.is_floating_point else torch.float64)
+        if n == x.shape[-1]:
+            return x @ H
+        out = x.clone()
+        out[..., :n] = x[..., :n] @ H
+        return out
+
+    def quant_s1p2(x):
+        sign = torch.sign(x)
+        mant = MAGS[torch.searchsorted(BNDS, x.abs().clamp(max=1.75),
+                                       right=True).clamp(min=0, max=7)]
+        sign = torch.where(mant == 0.0, torch.zeros_like(sign), sign)
+        return sign, mant
+
+    def quant_blk(blocks, sf, e1_8, e1_16):
+        B = blocks.shape[0]
+        j = BJ.to(blocks.device)
+        k = BK.to(blocks.device)
+        combined = sf[:, None] * P2[e1_8.long()][:, j] * \
+                   P2[e1_16.long().view(B, 8, 2)][:, j, k]
+        s, m = quant_s1p2(blocks / combined)
+        return s.view(B, 8, 2, 4), m.view(B, 8, 2, 4)
+
+    def dequant_blk(sf, e1_8, e1_16, sign, mant):
+        B = sf.shape[0]
+        j = BJ.to(sf.device)
+        k = BK.to(sf.device)
+        return ((sign * mant).view(B, 64)
+                * P2[e1_8.long()][:, j]
+                * P2[e1_16.long().view(B, 8, 2)][:, j, k]
+                * sf[:, None])
+
+    def quantize_tensor(x, n_cands=13, refine=True):
+        x = x.to(torch.float64)
+        shape = x.shape
+        C = shape[-1]
+        prefix = shape[:-1]
+        nb = C // 64
+        blocks = x.reshape(-1, 64)
+        B = blocks.shape[0]
+        dev = blocks.device
+
+        v16 = blocks.view(B, 16, 4).abs().amax(dim=2)
+        v8 = v16.view(B, 8, 2).amax(dim=2)
+        vmax = v8.amax(dim=1)
+
+        base = (vmax / 7.0).clamp(min=E_MIN, max=E_MAX)
+        bidx = torch.searchsorted(E6M2, base, right=True).clamp(min=1, max=len(E6M2) - 1)
+        half = n_cands // 2
+        off = torch.arange(-half, n_cands - half, device=dev)
+        cidx = (bidx[:, None] + off[None, :]).clamp(0, len(E6M2) - 1)
+        sf_c = E6M2[cidx]
+
+        best_mse = torch.full((B,), float('inf'), device=dev)
+        best_sf = torch.zeros(B, dtype=torch.float64, device=dev)
+        best_e8 = torch.zeros(B, 8, dtype=torch.float64, device=dev)
+        best_e16 = torch.zeros(B, 8, 2, dtype=torch.float64, device=dev)
+        best_s = torch.zeros(B, 8, 2, 4, dtype=torch.float64, device=dev)
+        best_m = torch.zeros(B, 8, 2, 4, dtype=torch.float64, device=dev)
+        v16_2d = v16.view(B, 8, 2)
+
+        def try_cfg(sf, e8, e16):
+            nonlocal best_mse, best_sf, best_e8, best_e16, best_s, best_m
+            s, m = quant_blk(blocks, sf, e8, e16)
+            dq = dequant_blk(sf, e8, e16, s, m)
+            mse = ((dq - blocks) ** 2).mean(dim=1)
+            better = mse < best_mse
+            _b = better[:, None, None, None]
+            best_mse = torch.where(better, mse, best_mse)
+            best_sf = torch.where(better, sf, best_sf)
+            best_e8 = torch.where(better[:, None], e8, best_e8)
+            best_e16 = torch.where(better[:, None, None], e16, best_e16)
+            best_s = torch.where(_b, s, best_s)
+            best_m = torch.where(_b, m, best_m)
+
+        for c in range(n_cands):
+            sf = sf_c[:, c]
+            rec = 1.0 / sf
+            e8 = (v8 * rec[:, None] >= 4.0).to(torch.float64)
+            e16 = (v16_2d * rec[:, None, None]
+                   * (1.0 / P2[e8.long()])[:, :, None] >= 2.0).to(torch.float64)
+            try_cfg(sf, e8, e16)
+
+        if refine:
+            for j in range(8):
+                for nv in (0.0, 1.0):
+                    t = best_e8.clone()
+                    t[:, j] = nv
+                    e16 = (v16_2d * (1.0 / best_sf)[:, None, None]
+                           * (1.0 / P2[t.long()])[:, :, None] >= 2.0).to(torch.float64)
+                    try_cfg(best_sf, t, e16)
+            for j in range(8):
+                for k in range(2):
+                    for nv in (0.0, 1.0):
+                        t = best_e16.clone()
+                        t[:, j, k] = nv
+                        try_cfg(best_sf, best_e8, t)
+
+        return {
+            "scale_factor": best_sf.view(B, 1).view(*prefix, nb, 1, 1, 1).to(torch.float32),
+            "scale_lv2": P2[best_e8.long()].view(*prefix, nb, 8, 1, 1).to(torch.float32),
+            "scale_lv3": P2[best_e16.long()].view(*prefix, nb, 8, 2, 1).to(torch.float32),
+            "sign": best_s.view(*prefix, nb, 8, 2, 4).to(torch.float32),
+            "mant": best_m.view(*prefix, nb, 8, 2, 4).to(torch.float32),
+        }
+
     q = dequantize_nvfp4(q_quant, q_scale).to(torch.float32)
     k = dequantize_nvfp4(k_quant, k_scale).to(torch.float32)
     v = dequantize_nvfp4(v_quant, v_scale).to(torch.float32)
     S = q.shape[0]
     q_h = apply_hadamard(q.view(S, q_num_heads, head_dim), n=head_dim).reshape(S, q_num_heads * head_dim)
     k_h = apply_hadamard(k.view(S, kv_num_heads, head_dim), n=head_dim).reshape(S, kv_num_heads * head_dim)
+
     return {
-        "q": quantize_tensor(q_h, n_scale_cands=13, refine_e1=True),
-        "k": quantize_tensor(k_h, n_scale_cands=13, refine_e1=True),
-        "v": quantize_tensor(v, n_scale_cands=13, refine_e1=True),
+        "q": quantize_tensor(q_h, n_cands=13, refine=True),
+        "k": quantize_tensor(k_h, n_cands=13, refine=True),
+        "v": quantize_tensor(v, n_cands=13, refine=True),
     }
