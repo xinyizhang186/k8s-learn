@@ -99,9 +99,10 @@ def _e6m2_candidates(target, n_candidates=3):
 
 
 def _apply_hadamard(x, H):
+    h = H.shape[0]
     C = x.shape[-1]
-    assert C % HAD_SIZE == 0
-    x_re = x.reshape(-1, HAD_SIZE)
+    assert C % h == 0
+    x_re = x.reshape(-1, h)
     x_rot = x_re @ H
     return x_rot.reshape(x.shape).to(torch.float32)
 
@@ -287,13 +288,13 @@ def hif4_calibration_and_quantize_weight(
     weight_scale: torch.Tensor,
     calib_activation_list: list,
 ) -> dict[str, Any]:
-    """权重 W (离线): Hadamard旋转 + E6M2 scale search + greedy微指数 (3候选)。"""
+    """权重 W (离线): Hadamard旋转 + E6M2 scale search + greedy微指数 (5候选)。"""
     weight_fp = _dequant_nvfp4(weight_quant, weight_scale)
 
     H = _random_hadamard(HAD_SIZE, seed=42).to(torch.float32)
     weight_rot = _apply_hadamard(weight_fp, H)
 
-    weight_params = _quantize_hif4(weight_rot, n_candidates=3)
+    weight_params = _quantize_hif4(weight_rot, n_candidates=5)
 
     activation_state = {
         "hadamard": H.contiguous(),
@@ -338,6 +339,8 @@ def hif4_calibration_attention(
     """Attention校准:
     Q/K: 共用Hadamard (保证Q@K^T不变), 旋转后无需重要性加权
     V:   不旋转, 计算逐通道二阶矩作为重要性 (V的误差直接进入输出)"""
+    q_C = q_num_heads * head_dim
+    k_C = kv_num_heads * head_dim
     H = _random_hadamard(HAD_SIZE, seed=123).to(torch.float32)
     v_imp = _compute_v_importance(calib_qkv_list)
 
