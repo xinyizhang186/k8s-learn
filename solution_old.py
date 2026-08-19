@@ -1,18 +1,18 @@
 """
 HiF4 solution.py 提交接口模板
 
-本文件只说明参赛者需要实现的6个公开函数，以及这些函数的输入/输出数据契约，不包含任何HiF4参考量化或标准化量实现。
+本文件只说明参赛者需要实现的 6 个公开函数，以及这些函数的输入/输出数据契约，不包含任何 HiF4 参考量化或标准化量实现。
 
-必须实现的6个函数：
+必须实现的 6 个函数：
 
 Linear:
     1. hif4_calibration_and_quantize_weight
     2. hif4_dynamic_quantize_activation
 Attention:
-    1. hif4_calibration_attention
-    2. hif4_dynamic_quantize_q
-    3. hif4_dynamic_quantize_k
-    4. hif4_dynamic_quantize_v
+    3. hif4_calibration_attention
+    4. hif4_dynamic_quantize_q
+    5. hif4_dynamic_quantize_k
+    6. hif4_dynamic_quantize_v
 
 说明：
 - 输入的Weight / Activation / Q / K / V均以NVFP4 carrier + block scale 的形式提供。
@@ -41,7 +41,7 @@ def dequantize_nvfp4(
     
     Args:
         quant_float:
-            NVFP4 values carrier, shape 为``(..., C)``。
+            NVFP4 value carrier, shape 为``(..., C)``。
         scale_float:    
             NVFP4 block scale, shape 为``(..., C // blk_size)``。
         blk_size:    
@@ -83,9 +83,9 @@ def dequantize_nvfp4(
 #   scale_lv3   : (*prefix, C//64, 8, 2, 1)
 #   sign        : (*prefix, C//64, 8, 2, 4)
 #   mant        : (*prefix, C//64, 8, 2, 4)
-
+# 
 # 数值格式要求：
-
+# 
 #   scale_factor: HiF4 E6M2 scale
 #   scale_lv2   : 1 或 2
 #   scale_lv3   : 1 或 2
@@ -112,7 +112,11 @@ def dequantize_nvfp4(
 # 不要依赖自定义 Python 对象、可调用对象或外部可变状态。
 # 
 # Linear 的 activation_state 可以包含固定 Weight 相关信息：例如选手可以根据自己的
-# 算法保存 smooth、clip 参数、importance，或固定的 weight quantization 参数。
+# 算法保存 smooth scale、clip 参数、importance，或固定的 weight quantization 参数。
+
+# ================================================================================
+# 1. Linear calibration + Weight quantization
+# ================================================================================
 
 def hif4_calibration_and_quantize_weight(
     weight_quant: torch.Tensor,
@@ -133,13 +137,13 @@ def hif4_calibration_and_quantize_weight(
         calib_activation_list:
             当前 Weight 对应的 calibration Activation 列表。
 
-            每一个元素均为一个二元 NVFP4 pair：
+            每个元素均为一个二元 NVFP4 pair：
 
-                (activation_quant, activation_sacle)
+                (activation_quant, activation_scale)
 
             其中：
                 activation_quant : [tokens, in_features]
-                activation_sacle : [tokens, in_features // 16]
+                activation_scale : [tokens, in_features // 16]
 
             calibration 阶段可以同时利用 Weight 和这些 Activation 搜索：
             smooth scale、clip 参数、旋转参数、importance、量化参数等。
@@ -154,7 +158,7 @@ def hif4_calibration_and_quantize_weight(
 
         weight_params: 
             当前 Weight 的最终 HiF4 参数。
-            它对应 ``weight_quant`` 解码后的原始 weight shape。
+            它对应 ``weight_quant`` 解码后的原始 Weight shape。
 
         activation_state:
             传给 ``hif4_dynamic_quantize_activation`` 的 calibration state。
@@ -171,7 +175,7 @@ def hif4_calibration_and_quantize_weight(
         本模板不提供 HiF4 参考实现。
     """
   
-    raise NotImplementError(
+    raise NotImplementedError(
         "Implement hif4_calibration_and_quantize_weight in your solution.py"
     )
 
@@ -190,7 +194,7 @@ def hif4_dynamic_quantize_activation(
     Args:
         activation_quant:
             当前 Activation 的 NVFP4 value carrier，通常为
-            ``[tokens, hidden_size]``。'
+            ``[tokens, hidden_size]``。
         activation_scale:
             当前 Activation 的 NVFP4 block scale，通常为
             ``[tokens, hidden_size // 16]``。
@@ -203,12 +207,12 @@ def hif4_dynamic_quantize_activation(
             Weight 相关信息，再结合当前 Activation 自身进行搜索或动态决策。
 
     Returns:
-        当前 Activation 对应的 HF4Params。
+        当前 Activation 对应的 HiF4Params。
         输出参数的逻辑 Tensor shape 必须与当前 Activation 一致。
 
     """
 
-    raise NotImplementError(
+    raise NotImplementedError(
         "Implement hif4_dynamic_quantize_activation in your solution.py"
     )
 
@@ -277,7 +281,7 @@ def hif4_calibration_attention(
             - 其他动态量化需要使用的 calibration 结果
         
     """
-    raise NotImplementError(
+    raise NotImplementedError(
         "Implement hif4_calibration_attention in your solution.py"
     )
 
@@ -287,7 +291,7 @@ def hif4_calibration_attention(
 
 def hif4_dynamic_quantize_q(
     q_quant: torch.Tensor,
-    q_sacle: torch.Tensor,
+    q_scale: torch.Tensor,
     q_num_heads: int,
     head_dim: int,
     q_state: Any,
@@ -299,7 +303,7 @@ def hif4_dynamic_quantize_q(
             Q 的 NVFP4 value carrier，shape 为
             ``[seq_len, q_num_heads * head_dim]``。
 
-        q_sacle:
+        q_scale:
             Q 的 NVFP4 block scale，shape 为
             ``[seq_len, q_num_heads * head_dim // 16]``。
         
@@ -316,7 +320,7 @@ def hif4_dynamic_quantize_q(
        当前 Q 对应的 HiF4Params。
         
     """
-    raise NotImplementError(
+    raise NotImplementedError(
         "Implement hif4_dynamic_quantize_q in your solution.py"
     )
 
@@ -326,7 +330,7 @@ def hif4_dynamic_quantize_q(
 
 def hif4_dynamic_quantize_k(
     k_quant: torch.Tensor,
-    k_sacle: torch.Tensor,
+    k_scale: torch.Tensor,
     kv_num_heads: int,
     head_dim: int,
     k_state: Any,
@@ -338,7 +342,7 @@ def hif4_dynamic_quantize_k(
             K 的 NVFP4 value carrier，shape 为
             ``[seq_len, kv_num_heads * head_dim]``。
 
-        k_sacle:
+        k_scale:
             K 的 NVFP4 block scale，shape 为
             ``[seq_len, kv_num_heads * head_dim // 16]``。
         
@@ -355,7 +359,7 @@ def hif4_dynamic_quantize_k(
        当前 K 对应的 HiF4Params。
         
     """
-    raise NotImplementError(
+    raise NotImplementedError(
         "Implement hif4_dynamic_quantize_k in your solution.py"
     )
 
@@ -365,7 +369,7 @@ def hif4_dynamic_quantize_k(
 
 def hif4_dynamic_quantize_v(
     v_quant: torch.Tensor,
-    v_sacle: torch.Tensor,
+    v_scale: torch.Tensor,
     kv_num_heads: int,
     head_dim: int,
     v_state: Any,
@@ -377,7 +381,7 @@ def hif4_dynamic_quantize_v(
             V 的 NVFP4 value carrier，shape 为
             ``[seq_len, kv_num_heads * head_dim]``。
 
-        v_sacle:
+        v_scale:
             V 的 NVFP4 block scale，shape 为
             ``[seq_len, kv_num_heads * head_dim // 16]``。
         
@@ -387,13 +391,13 @@ def hif4_dynamic_quantize_v(
         head_dim:
             每个 Value head 的维度。 
 
-        V_state:  
+        v_state:  
             ``hif4_calibration_attention`` 返回的 V calibration state。
 
     Returns:
        当前 V 对应的 HiF4Params。
         
     """
-    raise NotImplementError(
+    raise NotImplementedError(
         "Implement hif4_dynamic_quantize_v in your solution.py"
     )

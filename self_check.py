@@ -72,9 +72,9 @@ def _expected_hif4_param_shapes(
     if not shape:
         raise ValueError("original_shape must have at least one dimension")
 
-    channels = shape[-1]
+    channels = int(shape[-1])
     if channels % 64 != 0:
-        raise ValueError(f"last dim {channels} not divisible by HiF4 block size 64")
+        raise ValueError(f"last dimension {channels} is not divisible by HiF4 block size 64")
 
     prefix = shape[:-1] + (channels // 64,)
     return {
@@ -96,16 +96,16 @@ def validate_hif4_params(
     try:
         expected_shapes = _expected_hif4_param_shapes(original_shape)
     except Exception as exc:
-        return [f"{tag} {exc}"]
+        return [f"{tag}: {exc}"]
 
     if not isinstance(params, dict):
-        return [f"{tag} params must be a dict, got {type(params).__name__}"]
+        return [f"{tag}: expected dict, got {type(params).__name__}"]
 
     tensors: dict[str, torch.Tensor] = {}
 
     for name, expected_shape in expected_shapes.items():
         if name not in params:
-            errors.append(f"{tag} missing parameter: {name}")
+            errors.append(f"{tag} missing parameter: {name!r}")
             continue
 
         value = params[name]
@@ -137,8 +137,8 @@ def validate_hif4_params(
         return errors
 
     for name, value in tensors.items():
-        if not torch.isfinite(value).any():
-            count = int((~torch.isfinite(value))).sum().item()
+        if not torch.isfinite(value).all():
+            count = int((~torch.isfinite(value)).sum().item())
             errors.append(f"{tag}.{name}: contains {count} non-finite values")
 
     if errors:
@@ -159,13 +159,13 @@ def validate_hif4_params(
             f"{type(exc).__name__}: {exc}"
        ]
             
-    if not torch.isfinite(dequant).any():
-        count = int((~torch.isfinite(value))).sum().item()
+    if not torch.isfinite(dequant).all():
+        count = int((~torch.isfinite(dequant)).sum().item())
         errors.append(f"{tag}: dequantized tensor contains {count} non-finite values" )
         return errors
 
     expected_numel = math.prod(tuple(int(s) for s in original_shape))
-    if dequant.numel() != expected_numel:
+    if int(dequant.numel()) != int(expected_numel):
         errors.append(
             f"{tag}: dequantized numel {dequant.numel()} != expected {expected_numel}"
         )
@@ -186,16 +186,16 @@ def validate_hif4_params(
         )
 
     sf_clamped = scale_factor.clamp(min = 2.0 ** (-126))
-    e_sf = torch.floor(torch.log2(sf_clamped))
+    sf_exp = torch.floor(torch.log2(sf_clamped))
     sf_e6m2 = (
-        torch.round(scale_factor * (2.0 ** (2 - e_sf)))
-        * (2.0 ** (e_sf - 2))
+        torch.round(scale_factor * (2.0 ** (2 - sf_exp)))
+        * (2.0 ** (sf_exp - 2))
     )
     e6m2_ok = scale_factor == sf_e6m2
     if not e6m2_ok.all():
         errors.append(
             f"{tag}.scale_factor: {int((~e6m2_ok).sum().item())} values "
-            "are not in exact e6m2 values"
+            "are not exact E6M2 values"
         )
 
     lv2_ok = (scale_lv2 == 1.0) |  (scale_lv2 == 2.0)
@@ -233,7 +233,7 @@ def validate_hif4_params(
     if not mant_ok.all():
         invalid = mant[~mant_ok].unique().tolist()[:5]
         errors.append(
-            f"{tag}.mant: values must be exact multiples of 0.25 in [0, 1.75]"
+            f"{tag}.mant: values must be exact multiples of 0.25 in [0, 1.75]; "
             f"examples={invalid}"
         )
 
@@ -241,7 +241,7 @@ def validate_hif4_params(
 
 
 # ==================================================================================
-#testration-state validation
+#Calibration-state validation
 # ==================================================================================
 
 def validate_frozen_state(value: Any, tag: str) -> list[str]:
@@ -268,7 +268,7 @@ def validate_frozen_state(value: Any, tag: str) -> list[str]:
 
         if type(v) is torch.Tensor:
             if v.device.type != "cpu":
-                errors.append(f"{path}: tensor must be on cpu")
+                errors.append(f"{path}: tensor must be on CPU")
             if v.layout is not torch.strided:
                 errors.append(f"{path}: tensor must use dense strided layout")
             if v.dtype not in FROZEN_STATE_ALLOWED_TENSOR_DTYPES:
@@ -289,7 +289,7 @@ def validate_frozen_state(value: Any, tag: str) -> list[str]:
             return
 
         if type(v) is float:
-            if not match.isfinite(v):
+            if not math.isfinite(v):
                 errors.append(f"{path}: float must be finite")
             return
 
@@ -314,7 +314,7 @@ def validate_frozen_state(value: Any, tag: str) -> list[str]:
                     continue
                 if len(key.encode("utf-8")) > FROZEN_STATE_MAX_STRING_BYTES:
                     errors.append(
-                        f"{path}: dict keys exceeds "
+                        f"{path}: dict key exceeds "
                         f"{FROZEN_STATE_MAX_STRING_BYTES} UTF-8 bytes"
                     )
                 visit(nested, f"{path}.{key}", depth + 1)
@@ -338,10 +338,10 @@ def clone_frozen_state(value: Any) -> Any:
         return tuple(clone_frozen_state(v) for v in value)
     if type(value) is dict:
         return {key: clone_frozen_state(v) for key, v in value.items()}
-    return TypeError(f"unsupported state type {type(value).__name__}")
+    raise TypeError(f"unsupported state type {type(value).__name__}")
 
 
-def validate_linear_calibration(
+def validate_linear_calibration_result(
     result: Any, 
     weight_shape: Iterable[int], 
     tag: str,
@@ -350,7 +350,7 @@ def validate_linear_calibration(
         return [f"{tag}: expected dict, got {type(result).__name__}"]
 
     errors: list[str] = []
-    allowed = {"weight_params", "attention_state"}
+    allowed = {"weight_params", "activation_state"}
     unknown = sorted(set(result) - allowed)
     if unknown:
         errors.append(f"{tag}: unsupported keys {unknown}")
@@ -366,13 +366,13 @@ def validate_linear_calibration(
             )
         )
 
-    if "attention_state" not in result:
-            errors.append(f"{tag}: missing 'attention_state'")
+    if "activation_state" not in result:
+            errors.append(f"{tag}: missing 'activation_state'")
     else:
         errors.extend(
             validate_frozen_state(
-                result["attention_state"],
-                f"{tag}.attention_state",
+                result["activation_state"],
+                f"{tag}.activation_state",
             )
         )
 
@@ -393,7 +393,7 @@ def validate_attention_calibration_result(
         errors.append(f"{tag}: unsupported keys {unknown}")
     
     for role in ("q", "k", "v"):
-        key = f"{role}_sate"
+        key = f"{role}_state"
         if key not in result:
             errors.append(f"{tag}: missing {key!r}")
         else:
@@ -415,7 +415,7 @@ def _normalize_nvfp4_pair(value: Any, tag: str) -> list[torch.Tensor]:
         raise TypeError(f"{tag}: quant and scale must be plain torch.Tensor")
 
     if quant.ndim < 1:
-        raise TypeError(f"{tag}: quant tensor must have at least one dimension")
+        raise ValueError(f"{tag}: quant tensor must have at least one dimension")
 
     channels = int(quant.shape[-1])
     if channels % 16 != 0:
@@ -441,7 +441,7 @@ def _normalize_linear_group(raw_group: Any, group_idx: int) -> dict[str, Any]:
 
     weight = _normalize_nvfp4_pair(
         raw_group["weight"],
-        f"linear group {group_idx}.weight"
+        f"linear group {group_idx}.weight",
     )
     channels = int(weight[0].shape[-1])
 
@@ -491,11 +491,11 @@ def _normalize_linear_group(raw_group: Any, group_idx: int) -> dict[str, Any]:
     }
             
 
-def _normalize_linear_dataset(raw_data: Any, data_idx: int) -> dict[str, Any]:
+def _normalize_linear_dataset(raw_data: Any) -> list[dict[str, Any]]:
     if not isinstance(raw_data, list):
-        raise TypeError(f"linear.pt root must be a list")
+        raise TypeError("linear.pt root must be a list")
     if not raw_data:
-        raise ValueError(f"linear.pt must contain at least one group")
+        raise ValueError("linear.pt must contain at least one group")
     return [
         _normalize_linear_group(group, idx)
         for idx, group in enumerate(raw_data)
@@ -521,7 +521,7 @@ def _normalize_attention_sample(
     v = _normalize_nvfp4_pair(sample["v"], f"{tag}.v")
 
     if q[0].ndim != 2 or k[0].ndim != 2 or v[0].ndim != 2:
-        raise ValueError(f"{tag}: Q/K/V quant tensor must be 2D [seq_len, hidden]")
+        raise ValueError(f"{tag}: Q/K/V quant tensors must be 2D [seq_len, hidden]")
 
     expected_q_hidden = int(q_num_heads) * int(head_dim)
     expected_kv_hidden = int(kv_num_heads) * int(head_dim)
@@ -594,7 +594,7 @@ def _normalize_attention_group(raw_group: Any, group_idx: int) -> dict[str, Any]
         raise ValueError(f"attention group {group_idx}: test list must not be empty")
 
     calib = [
-        _normalize_nvfp4_pair(
+        _normalize_attention_sample(
             sample,
             f"attention group {group_idx}.calib[{i}]",
             q_num_heads, 
@@ -605,7 +605,7 @@ def _normalize_attention_group(raw_group: Any, group_idx: int) -> dict[str, Any]
     ]
    
     tests = [
-        _normalize_nvfp4_pair(
+        _normalize_attention_sample(
             sample,
             f"attention group {group_idx}.test[{i}]",
             q_num_heads, 
@@ -626,11 +626,11 @@ def _normalize_attention_group(raw_group: Any, group_idx: int) -> dict[str, Any]
 
 def _normalize_attention_dataset(raw_data: Any) -> list[dict[str, Any]]:
     if not isinstance(raw_data, list):
-        raise TypeError(f"attn.pt root must be a list")
+        raise TypeError("attn.pt root must be a list")
     if not raw_data:
-        raise ValueError(f"attn.pt must contain at least one group")
+        raise ValueError("attn.pt must contain at least one group")
     return [
-        _normalize_linear_group(group, idx)
+        _normalize_attention_group(group, idx)
         for idx, group in enumerate(raw_data)
     ]
 
@@ -640,14 +640,14 @@ def _normalize_attention_dataset(raw_data: Any) -> list[dict[str, Any]]:
 # ==================================================================================
 
 def _format_errors(errors: Iterable[str]) -> str:
-    return "   \n   ".join(str(error) for error in errors)
+    return "\n   ".join(str(error) for error in errors)
 
 
 def _safe_exception_text(exc: BaseException) -> str:
     message = str(exc).strip()
     if message:
         return f"{type(exc).__name__}: {message}"
-    return {type(exc).__name__}
+    return type(exc).__name__
 
 
 def check_linear_group(
@@ -661,7 +661,7 @@ def check_linear_group(
     try:
         calibration_result = weight_func(
             group["weight_quant"],
-            group["activation_scale"],
+            group["weight_scale"],
             group["calib_activation_list"],
         )
     except KeyboardInterrupt:
@@ -684,7 +684,7 @@ def check_linear_group(
         summary.add(False)
         print(
             f"[Linear][Group {group_idx}] calibration: FAILED\n "
-            f"        {_format_errors(errors)})"
+            f"        {_format_errors(errors)}"
         )
         return summary
 
@@ -726,7 +726,7 @@ def check_linear_group(
         else:
             print(
                 f"[Linear][Group {group_idx}][Test {test_idx}] activation: FAILED\n "
-                f"        {_format_errors(errors)})"
+                f"        {_format_errors(errors)}"
             )
     return summary
 
@@ -749,7 +749,7 @@ def check_attention_group(
         calibration_result = calibration_func(
             group["calib"],
             q_num_heads,
-            kv_num_heads
+            kv_num_heads,
             head_dim,
         )
     except KeyboardInterrupt:
@@ -764,7 +764,6 @@ def check_attention_group(
 
     errors = validate_attention_calibration_result(
         calibration_result,
-        tuple(group["weight_quant"].shape),
         f"[Attention][Group {group_idx}] calibration",
     )
 
@@ -772,14 +771,14 @@ def check_attention_group(
         summary.add(False)
         print(
             f"[Attention][Group {group_idx}] calibration: FAILED\n "
-            f"        {_format_errors(errors)})"
+            f"        {_format_errors(errors)}"
         )
         return summary
 
     summary.add(True)
     print(f"[Attention][Group {group_idx}] calibration: PASSED")
 
-    state = {
+    states = {
         "q": calibration_result["q_state"],
         "k": calibration_result["k_state"],
         "v": calibration_result["v_state"],
@@ -789,7 +788,7 @@ def check_attention_group(
 
     for test_idx, sample in enumerate(group["test"]):
         for role in ("q", "k", "v"):
-            quant_tensor, scale_tensor = sample(role)
+            quant_tensor, scale_tensor = sample[role]
             num_heads = q_num_heads if role == "q" else kv_num_heads
 
             try:
@@ -806,7 +805,7 @@ def check_attention_group(
             except BaseException as exc:
                 summary.add(False)
                 print(
-                    f"[Attention][Group {group_idx}][Test {test_idx}]"
+                    f"[Attention][Group {group_idx}][Test {test_idx}] "
                     f"{role.upper()}: FAILED ({_safe_exception_text(exc)})"
                 )
                 continue
@@ -826,7 +825,7 @@ def check_attention_group(
         else:
             print(
                 f"[Attention][Group {group_idx}][Test {test_idx}] "
-                f"{role.upper()}: FAILED\n       {_format_errors(errors)})"
+                f"{role.upper()}: FAILED\n       {_format_errors(errors)}"
             )
     return summary
 
@@ -857,7 +856,7 @@ def self_check(solution_dir: str, datasets_dir: str = DEFAULT_DATASETS_DIR) -> b
 
     solution_path = os.path.join(solution_dir, "solution.py")
     if not os.path.isfile(solution_path):
-        print(f"Error: solution.py was not found in solution_dir")
+        print("Error: solution.py was not found in solution_dir")
         return False
     
     try:
@@ -869,7 +868,7 @@ def self_check(solution_dir: str, datasets_dir: str = DEFAULT_DATASETS_DIR) -> b
         return False
 
     funcs: dict[str, Any] = {}
-    interface_errors: list[str] = {}
+    interface_errors: list[str] = []
     for role, name in API_NAMES.items():
         func = getattr(module, name, None)
         if not callable(func):
@@ -886,13 +885,13 @@ def self_check(solution_dir: str, datasets_dir: str = DEFAULT_DATASETS_DIR) -> b
 
     linear_path = os.path.join(datasets_dir, "linear.pt")
     attn_path = os.path.join(datasets_dir, "attn.pt")
-    if not os.path.isfile(linear_path) or not os.path.isfile(linear_path):
+    if not os.path.isfile(linear_path) or not os.path.isfile(attn_path):
         print("Error: --datasets_dir must contain linear.pt and attn.pt")
         return False
 
     try:
         linear_data = _normalize_linear_dataset(_load_dataset(linear_path))
-        attn_data = _normalize_linear_dataset(_load_dataset(attn_path))
+        attention_data = _normalize_attention_dataset(_load_dataset(attn_path))
     except KeyboardInterrupt:
         raise
     except BaseException as exc:
@@ -907,7 +906,7 @@ def self_check(solution_dir: str, datasets_dir: str = DEFAULT_DATASETS_DIR) -> b
     print(f"\n{'=' * 24} Linear {'=' * 24}")
     for group_idx, group in enumerate(linear_data):
         overall.merge(
-            check_linear_group(
+            check_attention_group(
                 funcs["weight"],
                 funcs["activation"],
                 group,
@@ -928,7 +927,7 @@ def self_check(solution_dir: str, datasets_dir: str = DEFAULT_DATASETS_DIR) -> b
             )
         )
 
-    print(f"\n{'=' * 24} Overall {'=' * 24}")
+    print(f"\n{'=' * 24} Summary {'=' * 24}")
     print(f"Passed checks: {overall.passed}/{overall.total}")
     print(f"Failed checks: {overall.failed}/{overall.total}")
 
@@ -936,13 +935,13 @@ def self_check(solution_dir: str, datasets_dir: str = DEFAULT_DATASETS_DIR) -> b
     if success:
         print("ALL OUTPUT-FORMAT CHECKS PASSED")
     else:
-        print("SOME OUTPUT-ORMAT  CHECKS FAILED")
+        print("SOME OUTPUT-FORMAT  CHECKS FAILED")
     return success
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Contestant-side loacl HiF4 output-format self-check"
+        description="Contestant-side local HiF4 output-format self-check"
     )
     parser.add_argument(
         "--solution_dir",
@@ -952,7 +951,7 @@ def main() -> int:
     parser.add_argument(
         "--datasets_dir",
         default=DEFAULT_DATASETS_DIR,
-        help="Directory containing linear.pt and attn.pt",
+        help="Directory containing the provided mini-sample linear.pt and attn.pt",
     )
     args = parser.parse_args()
     
