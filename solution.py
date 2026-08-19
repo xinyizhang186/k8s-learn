@@ -3,16 +3,16 @@ HiF4 solution.py — NVFP4 → HiF4 量化转换 (差异化算法)
 
 针对赛题要求"分别对权重、激活(A和Attention Q/K/V)设计最优量化算法"：
 
-  权重 W (离线): Hadamard旋转 + 两阶段scale search + greedy微指数 (5候选)
-  激活 A (在线): Hadamard旋转 + 两阶段scale search + 标准MSE (5候选)
-  Q     (在线): Hadamard旋转 + 两阶段scale search + 标准MSE (5候选)
-  K     (在线): Hadamard旋转 + 两阶段scale search + 标准MSE (5候选)
-  V     (在线): 无旋转 + 两阶段scale search + V校准二阶矩加权MSE (5候选)
+  权重 W (离线): Hadamard旋转 + E6M2 scale search + greedy微指数 (3候选)
+  激活 A (在线): Hadamard旋转 + E6M2 scale search + 标准MSE (5候选)
+  Q     (在线): Hadamard旋转 + E6M2 scale search + 标准MSE (5候选)
+  K     (在线): Hadamard旋转 + E6M2 scale search + 标准MSE (5候选)
+  V     (在线): 无旋转 + E6M2 scale search + V校准二阶矩加权MSE (5候选)
 
 差异化设计依据 (经实验验证):
   - Hadamard旋转使通道二阶矩趋于均匀 → W/A/Q/K的importance加权无效
   - V不旋转 (会破坏attention输出) → V的逐通道二阶矩保持非均匀 → importance加权有效
-  - 两阶段优化: 快速阈值判定(1 MSE/候选)筛选 + greedy精化最优候选
+  - greedy冗余消除: 从5次量化降到3次 (q1/q2复用为lv3=1的结果)
 
 所有算法均不计算 A@W，仅使用边际统计量 (per-channel E[X_j^2])
 作为通道重要性权重，优化逐元素重建 MSE。
@@ -171,55 +171,21 @@ def _quantize_block_given_scale(w, sf, imp=None):
     return scale_lv2, scale_lv3, sign, mant, block_mse
 
 
-def _quantize_block_fast(w, sf, imp=None):
-    """快速版本: 阈值判定微指数 + 仅1次MSE计算 (用于scale search)。"""
-    has_imp = imp is not None
-
-    max_8 = w.abs().amax(dim=(-2, -1))
-    scale_lv2 = torch.where(max_8 / sf.squeeze(-1).squeeze(-1) >= 4.0, 2.0, 1.0)
-
-    lv2_exp = scale_lv2.unsqueeze(-1).unsqueeze(-1)
-    base = sf * lv2_exp
-
-    max_4 = w.abs().amax(dim=-1)
-    scale_lv3 = torch.where(max_4 / base.squeeze(-1) >= 2.0, 2.0, 1.0)
-
-    lv3_exp = scale_lv3.unsqueeze(-1)
-    total = base * lv3_exp
-    q = (w / total * 4.0).round().clamp(-7, 7) / 4.0
-    dq = q * total
-
-    sign = torch.sign(q)
-    mant = q.abs()
-
-    if has_imp:
-        block_mse = (imp * (dq - w) ** 2).sum(dim=(-3, -2, -1))
-        norm = imp.sum(dim=(-3, -2, -1)).clamp(min=1e-12)
-        block_mse = block_mse / norm
-    else:
-        block_mse = ((dq - w) ** 2).mean(dim=(-3, -2, -1))
-
-    return scale_lv2, scale_lv3, sign, mant, block_mse
-
-
-def _quantize_hif4(w_fp, n_candidates=5, importance=None,
-                    chunk_rows=384, extra_scales=None, topk_greedy=1):
+def _quantize_hif4(w_fp, n_candidates=5, importance=None, chunk_rows=384):
     orig_shape = w_fp.shape
 
     if w_fp.ndim <= 1 or w_fp.shape[0] <= chunk_rows:
-        return _quantize_hif4_impl(w_fp, n_candidates, importance, extra_scales, topk_greedy)
+        return _quantize_hif4_impl(w_fp, n_candidates, importance)
 
     results = []
     for start in range(0, w_fp.shape[0], chunk_rows):
         end = min(start + chunk_rows, w_fp.shape[0])
-        chunk_imp = importance[start:end] if importance is not None else None
-        results.append(_quantize_hif4_impl(w_fp[start:end], n_candidates,
-                                             chunk_imp, extra_scales, topk_greedy))
+        results.append(_quantize_hif4_impl(w_fp[start:end], n_candidates, importance))
 
     return {k: torch.cat([r[k] for r in results], dim=0) for k in results[0]}
 
 
-def _quantize_hif4_impl(w_fp, n_candidates=5, importance=None, extra_scales=None, topk_greedy=1):
+def _quantize_hif4_impl(w_fp, n_candidates=5, importance=None):
     orig_shape = w_fp.shape
     C = int(orig_shape[-1])
     assert C % BLK_SIZE == 0
@@ -228,11 +194,18 @@ def _quantize_hif4_impl(w_fp, n_candidates=5, importance=None, extra_scales=None
     w_8224 = w.reshape(*w.shape[:-1], 8, 2, 4)
 
     if importance is not None:
-        if importance.ndim == 1:
-            importance = importance.unsqueeze(0)
-        imp = importance.reshape(*importance.shape[:-1], -1, BLK_SIZE)
-        imp_8224 = imp.reshape(*imp.shape[:-1], 8, 2, 4)
-        imp_8224 = imp_8224.unsqueeze(0).expand(*w_8224.shape) if imp_8224.ndim < w_8224.ndim else imp_8224.expand_as(w_8224)
+        imp_C = int(importance.shape[-1])
+        if imp_C != C:
+            imp_8224 = None
+        else:
+            if importance.ndim == 1:
+                importance = importance.unsqueeze(0)
+            imp = importance.reshape(*importance.shape[:-1], -1, BLK_SIZE)
+            imp_8224 = imp.reshape(*imp.shape[:-1], 8, 2, 4)
+            if imp_8224.shape[0] != w_8224.shape[0] or imp_8224.ndim != w_8224.ndim:
+                imp_8224 = imp_8224.expand(*w_8224.shape)
+            else:
+                imp_8224 = imp_8224.expand_as(w_8224)
     else:
         imp_8224 = None
 
@@ -241,10 +214,7 @@ def _quantize_hif4_impl(w_fp, n_candidates=5, importance=None, extra_scales=None
     target = (max_64 / 7.0).clamp(min=2.0 ** (-48))
 
     cands = _e6m2_candidates(target, n_candidates)
-    if extra_scales is not None and extra_scales.numel() > 0:
-        all_cands = torch.cat([cands, extra_scales], dim=-1)
-    else:
-        all_cands = cands
+    all_cands = cands
     n_total = all_cands.shape[-1]
 
     best_mse = torch.full(max_64.squeeze(-1).shape, float("inf"), dtype=torch.float32)
@@ -317,7 +287,7 @@ def hif4_calibration_and_quantize_weight(
     weight_scale: torch.Tensor,
     calib_activation_list: list,
 ) -> dict[str, Any]:
-    """权重 W (离线): Hadamard旋转 + 两阶段scale search + greedy微指数 (5候选)。"""
+    """权重 W (离线): Hadamard旋转 + E6M2 scale search + greedy微指数 (3候选)。"""
     weight_fp = _dequant_nvfp4(weight_quant, weight_scale)
 
     H = _random_hadamard(HAD_SIZE, seed=42).to(torch.float32)
@@ -344,7 +314,7 @@ def hif4_dynamic_quantize_activation(
     activation_scale: torch.Tensor,
     activation_state: Any,
 ) -> dict[str, torch.Tensor]:
-    """激活 A (在线): Hadamard旋转 + 两阶段scale search + 标准MSE (5候选)。
+    """激活 A (在线): Hadamard旋转 + E6M2 scale search + 标准MSE (5候选)。
     旋转后通道重要性趋于均匀, 不需要重要性加权。"""
     act_fp = _dequant_nvfp4(activation_quant, activation_scale)
 
@@ -389,7 +359,7 @@ def hif4_dynamic_quantize_q(
     head_dim: int,
     q_state: Any,
 ) -> dict[str, torch.Tensor]:
-    """Q (在线): Hadamard旋转 + 两阶段scale search + 标准MSE (5候选)。
+    """Q (在线): Hadamard旋转 + E6M2 scale search + 标准MSE (5候选)。
     Q@K^T误差中Q的贡献被K^2加权, 但旋转后K^2趋于均匀, 故不加权。"""
     q_fp = _dequant_nvfp4(q_quant, q_scale)
 
@@ -414,7 +384,7 @@ def hif4_dynamic_quantize_k(
     head_dim: int,
     k_state: Any,
 ) -> dict[str, torch.Tensor]:
-    """K (在线): Hadamard旋转 + 两阶段scale search + 标准MSE (5候选)。
+    """K (在线): Hadamard旋转 + E6M2 scale search + 标准MSE (5候选)。
     同Q, 旋转后Q^2趋于均匀, 故不加权。"""
     k_fp = _dequant_nvfp4(k_quant, k_scale)
 
@@ -439,14 +409,15 @@ def hif4_dynamic_quantize_v(
     head_dim: int,
     v_state: Any,
 ) -> dict[str, torch.Tensor]:
-    """V (在线): 无旋转 + 两阶段scale search + V校准二阶矩加权MSE (5候选)。
+    """V (在线): 无旋转 + E6M2 scale search + V校准二阶矩加权MSE (5候选)。
     V不旋转(无法保持attention输出), 但V的逐通道重要性是非均匀的
     (V的误差直接进入softmax(Q@K^T)@V的输出), 故用重要性加权。"""
     v_fp = _dequant_nvfp4(v_quant, v_scale)
 
+    imp = None
     if isinstance(v_state, dict):
         imp = v_state.get("importance")
-    else:
-        imp = None
+        if imp is not None and int(imp.shape[-1]) != int(v_fp.shape[-1]):
+            imp = None
 
     return _quantize_hif4(v_fp, n_candidates=5, importance=imp)
