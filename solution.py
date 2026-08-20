@@ -18,7 +18,7 @@ HiF4 solution.py — NVFP4 → HiF4 量化转换 (输出敏感度优化)
   3. Linear输出加权: 权重用 lambda_j=mean(X_rot^2), 激活用 diag(W_hat^T W_hat)
   4. Attention V加权: rho_t = sum_i P[i,t]^2 来自 P^T P (非 E[V_j^2])
   5. SmoothQuant: alpha扫描{None,0.5}, 校准proxy MSE选择, 无量化时严格等价
-  6. P6重排序: Linear alpha选择 + Attention rho vs None比较, 校准集不劣
+  6. P6重排序: Linear alpha选择 (校准集不劣)
   7. Q/K Hadamard防御: head_dim非64倍数时自动禁用
 
 参考:
@@ -308,16 +308,21 @@ def _compute_v_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim):
     group = q_num_heads // kv_num_heads
     scale = 1.0 / math.sqrt(head_dim)
 
-    seq = calib_qkv_list[0]["v"][0].shape[0]
-    rho = torch.zeros(kv_num_heads, seq, dtype=torch.float32)
+    rho = None
     n_samples = 0
 
     for sample in calib_qkv_list:
         q_fp = _dequant_nvfp4(*sample["q"])
         k_fp = _dequant_nvfp4(*sample["k"])
+        cur_seq = q_fp.shape[0]
 
-        q_re = q_fp.reshape(seq, q_num_heads, head_dim).transpose(0, 1)
-        k_re = k_fp.reshape(seq, kv_num_heads, head_dim).transpose(0, 1)
+        if rho is None:
+            rho = torch.zeros(kv_num_heads, cur_seq, dtype=torch.float32)
+        elif rho.shape[1] != cur_seq:
+            break
+
+        q_re = q_fp.reshape(cur_seq, q_num_heads, head_dim).transpose(0, 1)
+        k_re = k_fp.reshape(cur_seq, kv_num_heads, head_dim).transpose(0, 1)
 
         for g in range(kv_num_heads):
             q_group = q_re[g * group:(g + 1) * group]
@@ -328,6 +333,8 @@ def _compute_v_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim):
 
         n_samples += 1
 
+    if rho is None:
+        rho = torch.ones(kv_num_heads, 1, dtype=torch.float32)
     rho = (rho / max(n_samples, 1)).clamp(min=1e-8)
     return rho
 
@@ -480,8 +487,8 @@ def hif4_calibration_attention(
     head_dim: int,
 ) -> dict[str, Any]:
     """Attention校准:
-    Q/K: 共用Hadamard (保证Q@K^T不变), 旋转后无需重要性加权
-    V:   不旋转, P6用真实校准Attention MSE比较 rho vs None, 选更优"""
+    Q/K: 共用Hadamard (保证Q@K^T不变), head_dim非64倍数时禁用
+    V:   不旋转, 用 P^T P 的 rho_t 作为 token 级 importance"""
     rho = _compute_v_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim)
     calib_seq = rho.shape[1]
     rho_mean = rho.mean(dim=1).repeat_interleave(head_dim).contiguous()
@@ -491,42 +498,11 @@ def hif4_calibration_attention(
     else:
         H = None
 
-    # P6: compare rho vs None on calibration Attention MSE
-    use_rho = True
-    total_elems = sum(s["q"][0].numel() + s["k"][0].numel() + s["v"][0].numel() for s in calib_qkv_list)
-    if total_elems < 500_000:
-        mse_rho = 0.0
-        mse_none = 0.0
-        for sample in calib_qkv_list:
-            q_fp = _dequant_nvfp4(*sample["q"])
-            k_fp = _dequant_nvfp4(*sample["k"])
-            v_fp = _dequant_nvfp4(*sample["v"])
-            seq = v_fp.shape[0]
-
-            q_q, k_q = q_fp, k_fp
-            if H is not None:
-                q_q = _apply_hadamard(q_fp, H)
-                k_q = _apply_hadamard(k_fp, H)
-            q_hat = _hif4_dequant(_quantize_hif4(q_q, n_candidates=13), q_q.shape)
-            k_hat = _hif4_dequant(_quantize_hif4(k_q, n_candidates=13), k_q.shape)
-
-            imp_rho = rho.T.repeat_interleave(head_dim, dim=1) if seq == calib_seq else rho_mean
-            v_hat_rho = _hif4_dequant(_quantize_hif4(v_fp, n_candidates=13, importance=imp_rho), v_fp.shape)
-            v_hat_none = _hif4_dequant(_quantize_hif4(v_fp, n_candidates=13), v_fp.shape)
-
-            ref = _attention(q_fp, k_fp, v_fp, q_num_heads, kv_num_heads, head_dim)
-            out_rho = _attention(q_hat, k_hat, v_hat_rho, q_num_heads, kv_num_heads, head_dim)
-            out_none = _attention(q_hat, k_hat, v_hat_none, q_num_heads, kv_num_heads, head_dim)
-            mse_rho += ((out_rho - ref) ** 2).mean().item()
-            mse_none += ((out_none - ref) ** 2).mean().item()
-
-        use_rho = mse_rho <= mse_none
-
     q_state = {"hadamard": H}
     k_state = {"hadamard": H}
     v_state = {
-        "rho": rho.contiguous() if use_rho else None,
-        "rho_mean": rho_mean if use_rho else None,
+        "rho": rho.contiguous(),
+        "rho_mean": rho_mean,
         "calib_seq": calib_seq,
     }
 
