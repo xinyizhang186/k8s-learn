@@ -7,18 +7,20 @@ HiF4 solution.py — NVFP4 → HiF4 量化转换 (输出敏感度优化)
                  校准激活 lambda_j 加权 (对齐 ||X E_W^T||^2 输出MSE)
   激活 A (在线): SmoothQuant D^-1 + Hadamard旋转 + exact微指数 +
                  diag(W_hat^T W_hat) 加权 (对齐 ||E_X W_hat^T||^2 输出MSE)
-  Q     (在线): Hadamard旋转 + E6M2 scale search (13候选) + exact微指数
-  K     (在线): Hadamard旋转 + E6M2 scale search (13候选) + exact微指数
-  V     (在线): 无旋转 + E6M2 scale search (13候选) + exact微指数 +
+  Q     (在线): Hadamard旋转 + E6M2 scale search (9候选) + exact微指数 +
+                 可选 Jacobian 重要性 (softmax Jacobian 对角近似)
+  K     (在线): Hadamard旋转 + E6M2 scale search (9候选) + exact微指数 +
+                 可选 Jacobian 重要性
+  V     (在线): 无旋转 + E6M2 scale search (9候选) + exact微指数 +
                  P^T P 的 rho_t token级加权 (对齐 ||P E_V||^2 输出MSE)
 
 核心优化:
   1. exact微指数: 4组合联合搜索, 逐块严格不劣于贪心 (3次量化, 同开销)
-  2. E6M2对称窗口: 自适应候选数(大5/中7/小9, Attention固定13), 嵌套不劣
+  2. E6M2对称窗口: 自适应候选数(大5/中9/小11, Attention固定9), 嵌套不劣
   3. Linear输出加权: 权重用 lambda_j=mean(X_rot^2), 激活用 diag(W_hat^T W_hat)
   4. Attention V加权: rho_t = sum_i P[i,t]^2 来自 P^T P (非 E[V_j^2])
-  5. SmoothQuant: alpha扫描{None,0.5}, 校准proxy MSE选择, 无量化时严格等价
-  6. P6重排序: Linear alpha选择 (校准集不劣)
+  5. SmoothQuant: alpha扫描(小/中矩阵5值, 大矩阵2值), 校准proxy MSE选择, 无量化时严格等价
+  6. Attention模式选择: Hadamard vs Jacobian, 校准attn MSE+10%安全裕度, 仅小数据评估
   7. Q/K Hadamard防御: head_dim非64倍数时自动禁用
 
 参考:
@@ -708,7 +710,7 @@ def hif4_dynamic_quantize_v(
     head_dim: int,
     v_state: Any,
 ) -> dict[str, torch.Tensor]:
-    """V (在线): 无旋转 + E6M2 scale search (13候选) +
+    """V (在线): 无旋转 + E6M2 scale search (9候选) +
     P^T P 的 rho_t 作为 token 级 importance。"""
     v_fp = _dequant_nvfp4(v_quant, v_scale)
 
