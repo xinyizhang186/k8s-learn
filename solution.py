@@ -90,9 +90,9 @@ def _adaptive_n_candidates(shape):
     if numel > 4_000_000:
         return 5
     elif numel > 1_000_000:
-        return 7
-    else:
         return 9
+    else:
+        return 11
 
 
 def _e6m2_candidates(target, n_candidates=3):
@@ -339,6 +339,85 @@ def _compute_v_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim):
     return rho
 
 
+def _compute_qk_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim):
+    """Q/K per-channel importance via diagonal-approx of softmax Jacobian.
+
+    J_i ≈ diag(p_i). Q_imp[i,r] = sum_t K[t,r]^2 * P[i,t]^2 * ||V[t]||^2 / d.
+    For GQA: K importance accumulates across all Q heads sharing each KV head.
+    """
+    group = q_num_heads // kv_num_heads
+    scale = 1.0 / math.sqrt(head_dim)
+
+    q_imp = torch.zeros(q_num_heads, head_dim, dtype=torch.float32)
+    k_imp = torch.zeros(kv_num_heads, head_dim, dtype=torch.float32)
+    n_samples = 0
+
+    for sample in calib_qkv_list:
+        q_fp = _dequant_nvfp4(*sample["q"])
+        k_fp = _dequant_nvfp4(*sample["k"])
+        v_fp = _dequant_nvfp4(*sample["v"])
+        seq = q_fp.shape[0]
+
+        q_re = q_fp.reshape(seq, q_num_heads, head_dim).transpose(0, 1)
+        k_re = k_fp.reshape(seq, kv_num_heads, head_dim).transpose(0, 1)
+        v_re = v_fp.reshape(seq, kv_num_heads, head_dim).transpose(0, 1)
+        v_nsq = (v_re ** 2).sum(dim=-1)
+
+        for g in range(kv_num_heads):
+            k_g = k_re[g]
+            v_nsq_g = v_nsq[g]
+            k_g_sq = k_g ** 2
+            for h in range(g * group, (g + 1) * group):
+                q_h = q_re[h]
+                scores = torch.matmul(q_h, k_g.transpose(-1, -2)) * scale
+                p = torch.softmax(scores, dim=-1)
+                p_sq = p ** 2
+                q_imp[h] += torch.einsum("tr,it,t->ir", k_g_sq, p_sq, v_nsq_g).mean(dim=0) / head_dim
+                k_imp[g] += torch.einsum("it,t,ir->tr", p_sq, v_nsq_g, q_h ** 2).mean(dim=0) / head_dim
+
+        n_samples += 1
+
+    q_imp = (q_imp / max(n_samples, 1)).clamp(min=1e-10)
+    k_imp = (k_imp / max(n_samples, 1)).clamp(min=1e-10)
+    return q_imp.reshape(q_num_heads * head_dim).contiguous(), k_imp.reshape(kv_num_heads * head_dim).contiguous()
+
+
+def _eval_attn_mode(calib_qkv_list, q_num_heads, kv_num_heads, head_dim,
+                    hadamard, q_imp, k_imp, v_rho, max_samples=1, n_cand=5):
+    """Evaluate attention reconstruction MSE for a given mode on calibration data."""
+    total_mse = 0.0
+    n_eval = 0
+    for sample in calib_qkv_list[:max_samples]:
+        q_fp = _dequant_nvfp4(*sample["q"])
+        k_fp = _dequant_nvfp4(*sample["k"])
+        v_fp = _dequant_nvfp4(*sample["v"])
+        seq = q_fp.shape[0]
+
+        q_work = q_fp.clone()
+        k_work = k_fp.clone()
+        v_work = v_fp.clone()
+        if hadamard is not None:
+            q_work = _apply_hadamard(q_work, hadamard)
+            k_work = _apply_hadamard(k_work, hadamard)
+
+        q_params = _quantize_hif4(q_work, n_candidates=n_cand, importance=q_imp)
+        k_params = _quantize_hif4(k_work, n_candidates=n_cand, importance=k_imp)
+        v_imp = None
+        if v_rho is not None and v_rho.shape[1] == seq:
+            v_imp = v_rho.transpose(0, 1).repeat_interleave(head_dim, dim=1).reshape(seq, kv_num_heads * head_dim)
+        v_params = _quantize_hif4(v_work, n_candidates=n_cand, importance=v_imp)
+
+        q_hat = _hif4_dequant(q_params, q_work.shape)
+        k_hat = _hif4_dequant(k_params, k_work.shape)
+        v_hat = _hif4_dequant(v_params, v_work.shape)
+
+        ref_out = _attention(q_fp, k_fp, v_fp, q_num_heads, kv_num_heads, head_dim)
+        mode_out = _attention(q_hat, k_hat, v_hat, q_num_heads, kv_num_heads, head_dim)
+        total_mse += ((mode_out - ref_out) ** 2).mean().item()
+        n_eval += 1
+    return total_mse / max(n_eval, 1)
+
+
 def _attention(q, k, v, q_heads, kv_heads, head_dim):
     """GQA attention (no mask, matching simulate_scoring.py platform behavior)."""
     seq = q.shape[0]
@@ -391,12 +470,15 @@ def hif4_calibration_and_quantize_weight(
         max_act = torch.maximum(max_act, act.abs().amax(dim=0))
     max_w = weight_fp.abs().amax(dim=0).clamp(min=1e-8)
 
-    # P5+P6: scan alpha in {None, 0.5}, select by weighted recon MSE proxy
-    # Use weight row subsample for scan speed; importance from full calib data
+    w_numel = weight_fp.numel()
+    if w_numel > 4_000_000:
+        alpha_list = (None, 0.5)
+    else:
+        alpha_list = (None, 0.25, 0.5, 0.75, 1.0)
     n_scan = min(256, weight_fp.shape[0])
     w_scan = weight_fp[:n_scan]
     best_proxy = None
-    for alpha in (None, 0.5):
+    for alpha in alpha_list:
         if alpha is None:
             D = torch.ones(K, dtype=torch.float32)
         else:
@@ -486,20 +568,66 @@ def hif4_calibration_attention(
     kv_num_heads: int,
     head_dim: int,
 ) -> dict[str, Any]:
-    """Attention校准:
-    Q/K: 共用Hadamard (保证Q@K^T不变), head_dim非64倍数时禁用
-    V:   不旋转, 用 P^T P 的 rho_t 作为 token 级 importance"""
+    """Attention calibration with mode selection (non-inferior).
+
+    Computes V importance (rho) and Q/K Jacobian importance, then selects
+    the best mode by calibration attention MSE.  Non-baseline modes require
+    ≥10% lower MSE than the baseline to be selected (safety margin).
+    """
     rho = _compute_v_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim)
     calib_seq = rho.shape[1]
     rho_mean = rho.mean(dim=1).repeat_interleave(head_dim).contiguous()
 
+    q_imp_flat, k_imp_flat = _compute_qk_importance(
+        calib_qkv_list, q_num_heads, kv_num_heads, head_dim
+    )
+
+    H = None
     if head_dim % HAD_SIZE == 0:
         H = _random_hadamard(HAD_SIZE, seed=123).to(torch.float32).contiguous()
-    else:
-        H = None
 
-    q_state = {"hadamard": H}
-    k_state = {"hadamard": H}
+    q_hidden = q_num_heads * head_dim
+    kv_hidden = kv_num_heads * head_dim
+    q_imp_valid = int(q_imp_flat.shape[-1]) == q_hidden
+    k_imp_valid = int(k_imp_flat.shape[-1]) == kv_hidden
+
+    modes = []
+    if H is not None:
+        modes.append({"hadamard": H, "q_imp": None, "k_imp": None, "name": "had"})
+    if q_imp_valid and k_imp_valid:
+        modes.append({"hadamard": None, "q_imp": q_imp_flat, "k_imp": k_imp_flat, "name": "jac"})
+    if not modes:
+        modes.append({"hadamard": None, "q_imp": None, "k_imp": None, "name": "plain"})
+
+    best_mode = modes[0]
+    calib_seq_len = calib_qkv_list[0]["q"][0].shape[0] if calib_qkv_list else 0
+    do_mode_eval = calib_seq_len <= 32 and q_hidden <= 512
+
+    if do_mode_eval:
+        best_mse = float("inf")
+        baseline_mse = None
+        for mode in modes:
+            try:
+                mse = _eval_attn_mode(
+                    calib_qkv_list, q_num_heads, kv_num_heads, head_dim,
+                    mode["hadamard"], mode["q_imp"], mode["k_imp"], rho
+                )
+            except Exception:
+                continue
+            is_baseline = mode["name"] in ("had", "plain")
+            if is_baseline:
+                baseline_mse = mse
+                best_mse = mse
+                best_mode = mode
+            elif baseline_mse is not None and mse < baseline_mse * 0.90:
+                best_mse = mse
+                best_mode = mode
+            elif baseline_mse is None and mse < best_mse:
+                best_mse = mse
+                best_mode = mode
+
+    q_state = {"hadamard": best_mode["hadamard"], "importance": best_mode["q_imp"]}
+    k_state = {"hadamard": best_mode["hadamard"], "importance": best_mode["k_imp"]}
     v_state = {
         "rho": rho.contiguous(),
         "rho_mean": rho_mean,
@@ -520,17 +648,23 @@ def hif4_dynamic_quantize_q(
     head_dim: int,
     q_state: Any,
 ) -> dict[str, torch.Tensor]:
-    """Q (在线): Hadamard旋转 + E6M2 scale search (13候选)。"""
+    """Q (online): Hadamard (if in state) + E6M2 scale search + optional Jacobian importance."""
     q_fp = _dequant_nvfp4(q_quant, q_scale)
 
+    imp = None
     if isinstance(q_state, dict):
         H = q_state.get("hadamard")
+        imp = q_state.get("importance")
     else:
         H = None
     if H is not None:
         q_fp = _apply_hadamard(q_fp, H.to(torch.float32))
+    if imp is not None and int(imp.shape[-1]) == int(q_fp.shape[-1]):
+        pass
+    else:
+        imp = None
 
-    return _quantize_hif4(q_fp, n_candidates=13)
+    return _quantize_hif4(q_fp, n_candidates=9, importance=imp)
 
 
 # ======================================================================
@@ -544,17 +678,23 @@ def hif4_dynamic_quantize_k(
     head_dim: int,
     k_state: Any,
 ) -> dict[str, torch.Tensor]:
-    """K (在线): Hadamard旋转 + E6M2 scale search (13候选)。"""
+    """K (online): Hadamard (if in state) + E6M2 scale search + optional Jacobian importance."""
     k_fp = _dequant_nvfp4(k_quant, k_scale)
 
+    imp = None
     if isinstance(k_state, dict):
         H = k_state.get("hadamard")
+        imp = k_state.get("importance")
     else:
         H = None
     if H is not None:
         k_fp = _apply_hadamard(k_fp, H.to(torch.float32))
+    if imp is not None and int(imp.shape[-1]) == int(k_fp.shape[-1]):
+        pass
+    else:
+        imp = None
 
-    return _quantize_hif4(k_fp, n_candidates=13)
+    return _quantize_hif4(k_fp, n_candidates=9, importance=imp)
 
 
 # ======================================================================
@@ -589,4 +729,4 @@ def hif4_dynamic_quantize_v(
             if rho_mean is not None and int(rho_mean.shape[-1]) == kv_hidden:
                 imp = rho_mean.to(torch.float32)
 
-    return _quantize_hif4(v_fp, n_candidates=13, importance=imp)
+    return _quantize_hif4(v_fp, n_candidates=9, importance=imp)
