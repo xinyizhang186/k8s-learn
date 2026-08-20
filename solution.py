@@ -354,21 +354,21 @@ def _compute_v_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim):
 
 
 def _compute_qk_jacobian_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim, max_seq=256):
-    """Q/K Jacobian curvature importance from softmax Jacobian (no A@W).
+    """Q/K Jacobian curvature from softmax Jacobian (no A@W).
 
-    For each head h:
-      G_i = J_i V V^T J_i,  J_i = diag(p_i) - p_i p_i^T  (softmax Jacobian)
-      H_Q[h,i,r] = diag(K^T G_i K)[r] / d  = ||row r of (V^T J_i K)||^2 / d
-      H_K[h,t,r] = (sum_i G_i[t,t] * Q[i,r]^2) / d
+    H_Q[h] = A_i^T @ A_i / d  where A_i = V^T J_i K  (per head, Gram for Q GPTQ)
+    H_K[g] = sum_h B_h^T @ B_h / d  where B_h = V^T J_i Q_h  (per KV group, Gram for K GPTQ)
+    Diagonal of H_Q/H_K gives the per-element importance (q_imp/k_imp).
 
-    GQA: K importance accumulates over Q heads sharing the same KV head.
-    Returns (q_imp[num_heads, seq, d], k_imp[kv_num_heads, seq, d], calib_seq).
+    Returns (q_imp, k_imp, calib_seq, H_Q_head, H_K_head).
     """
     group = q_num_heads // kv_num_heads
     scale = 1.0 / math.sqrt(head_dim)
 
     q_imp_total = None
     k_imp_total = None
+    hq_total = None
+    hk_total = None
     calib_seq = 0
     n_samples = 0
 
@@ -389,6 +389,8 @@ def _compute_qk_jacobian_importance(calib_qkv_list, q_num_heads, kv_num_heads, h
             calib_seq = seq
             q_imp_total = torch.zeros(q_num_heads, seq, head_dim, dtype=torch.float32)
             k_imp_total = torch.zeros(kv_num_heads, seq, head_dim, dtype=torch.float32)
+            hq_total = torch.zeros(q_num_heads, head_dim, head_dim, dtype=torch.float32)
+            hk_total = torch.zeros(kv_num_heads, head_dim, head_dim, dtype=torch.float32)
         elif seq != calib_seq:
             continue
 
@@ -417,6 +419,14 @@ def _compute_qk_jacobian_importance(calib_qkv_list, q_num_heads, kv_num_heads, h
 
                 A = Term1 - Term2
                 q_imp_total[h] += (A ** 2).sum(dim=-1) / head_dim
+                hq_total[h] += torch.bmm(A.transpose(1, 2), A).sum(dim=0) / head_dim
+
+                # B_i = V^T J_i Q (same structure, Q instead of K)
+                Term1B = torch.matmul(V_weighted.transpose(1, 2), q_h)
+                PQ = torch.matmul(P, q_h)
+                Term2B = VP.t().unsqueeze(-1) * PQ.unsqueeze(1)
+                B = Term1B - Term2B
+                hk_total[g] += torch.bmm(B.transpose(1, 2), B).sum(dim=0) / head_dim
 
                 # G_i[t,t] = p_i[t]^2 * ||V[t] - V_bar_i||^2
                 V_bar = torch.matmul(P, v_g)
@@ -428,11 +438,13 @@ def _compute_qk_jacobian_importance(calib_qkv_list, q_num_heads, kv_num_heads, h
         n_samples += 1
 
     if q_imp_total is None or n_samples == 0:
-        return None, None, 0
+        return None, None, 0, None, None
 
     q_imp_total /= n_samples
     k_imp_total /= n_samples
-    return q_imp_total, k_imp_total, calib_seq
+    hq_total /= n_samples
+    hk_total /= n_samples
+    return q_imp_total, k_imp_total, calib_seq, hq_total, hk_total
 
 
 def _compute_qk_smooth_scale(calib_qkv_list, q_num_heads, kv_num_heads, head_dim, alpha=0.5):
@@ -920,9 +932,9 @@ def hif4_calibration_attention(
     D_q_flat, D_k_flat = _compute_qk_smooth_scale(
         calib_qkv_list, q_num_heads, kv_num_heads, head_dim, alpha=0.5)
 
-    q_imp, k_imp, calib_seq_jac = None, None, 0
+    q_imp, k_imp, calib_seq_jac, hq_head, hk_head = None, None, 0, None, None
     if calib_qkv_list:
-        q_imp, k_imp, calib_seq_jac = _compute_qk_jacobian_importance(
+        q_imp, k_imp, calib_seq_jac, hq_head, hk_head = _compute_qk_jacobian_importance(
             calib_qkv_list, q_num_heads, kv_num_heads, head_dim, max_seq=256)
 
     modes = []
@@ -965,6 +977,37 @@ def hif4_calibration_attention(
         k_state["importance_mean"] = k_imp.mean(dim=1).reshape(-1).contiguous()
         q_state["calib_seq"] = calib_seq_jac
         k_state["calib_seq"] = calib_seq_jac
+
+        # Q/K GPTQ Grams (block-diagonal of H_Q/H_K, transformed for balancing)
+        if hq_head is not None and head_dim % BLK_SIZE == 0:
+            n_sub = head_dim // BLK_SIZE
+            if use_balancing and D_q_flat is not None:
+                q_hidden = q_num_heads * head_dim
+                d_q = D_q_flat.to(torch.float32).reshape(q_num_heads, n_sub, BLK_SIZE)
+                d_k = D_k_flat.to(torch.float32).reshape(kv_num_heads, n_sub, BLK_SIZE)
+            else:
+                d_q = None
+                d_k = None
+
+            gram_Q_blocks = []
+            for h_idx in range(q_num_heads):
+                for s in range(n_sub):
+                    blk = hq_head[h_idx, s*BLK_SIZE:(s+1)*BLK_SIZE, s*BLK_SIZE:(s+1)*BLK_SIZE]
+                    if d_q is not None:
+                        d_h = d_q[h_idx, s]
+                        blk = blk * d_h.unsqueeze(0) * d_h.unsqueeze(1)
+                    gram_Q_blocks.append(blk)
+            q_state["gram_Q"] = torch.stack(gram_Q_blocks).contiguous()
+
+            gram_K_blocks = []
+            for g_idx in range(kv_num_heads):
+                for s in range(n_sub):
+                    blk = hk_head[g_idx, s*BLK_SIZE:(s+1)*BLK_SIZE, s*BLK_SIZE:(s+1)*BLK_SIZE]
+                    if d_k is not None:
+                        d_g = d_k[g_idx, s]
+                        blk = blk * d_g.unsqueeze(0) * d_g.unsqueeze(1)
+                    gram_K_blocks.append(blk)
+            k_state["gram_K"] = torch.stack(gram_K_blocks).contiguous()
 
     if use_balancing:
         q_state["smooth_scale"] = D_q_flat.contiguous()
@@ -1020,7 +1063,13 @@ def hif4_dynamic_quantize_q(
     if imp is not None and D is not None:
         imp = imp * (D.to(torch.float32) ** 2)
 
-    return _quantize_hif4(q_fp, n_candidates=13, importance=imp)
+    std_params = _quantize_hif4(q_fp, n_candidates=13, importance=imp)
+
+    gram_Q = q_state.get("gram_Q")
+    if gram_Q is not None and int(q_fp.shape[-1]) % BLK_SIZE == 0:
+        std_params = _apply_activation_gptq(std_params, q_fp, gram_Q)
+
+    return std_params
 
 
 # ======================================================================
@@ -1064,7 +1113,13 @@ def hif4_dynamic_quantize_k(
     if imp is not None and D is not None:
         imp = imp / (D.to(torch.float32) ** 2 + 1e-12)
 
-    return _quantize_hif4(k_fp, n_candidates=13, importance=imp)
+    std_params = _quantize_hif4(k_fp, n_candidates=13, importance=imp)
+
+    gram_K = k_state.get("gram_K")
+    if gram_K is not None and int(k_fp.shape[-1]) % BLK_SIZE == 0:
+        std_params = _apply_activation_gptq(std_params, k_fp, gram_K)
+
+    return std_params
 
 
 # ======================================================================
