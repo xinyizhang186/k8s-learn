@@ -3,9 +3,9 @@ HiF4 solution.py — NVFP4 → HiF4 量化转换 (输出敏感度优化)
 
 针对赛题要求"分别对权重、激活(A和Attention Q/K/V)设计最优量化算法"：
 
-  权重 W (离线): Hadamard旋转 + E6M2 scale search (13候选) + exact微指数 +
+  权重 W (离线): SmoothQuant alpha扫描 + Hadamard旋转 + exact微指数 +
                  校准激活 lambda_j 加权 (对齐 ||X E_W^T||^2 输出MSE)
-  激活 A (在线): Hadamard旋转 + E6M2 scale search (13候选) + exact微指数 +
+  激活 A (在线): SmoothQuant D^-1 + Hadamard旋转 + exact微指数 +
                  diag(W_hat^T W_hat) 加权 (对齐 ||E_X W_hat^T||^2 输出MSE)
   Q     (在线): Hadamard旋转 + E6M2 scale search (13候选) + exact微指数
   K     (在线): Hadamard旋转 + E6M2 scale search (13候选) + exact微指数
@@ -14,15 +14,17 @@ HiF4 solution.py — NVFP4 → HiF4 量化转换 (输出敏感度优化)
 
 核心优化:
   1. exact微指数: 4组合联合搜索, 逐块严格不劣于贪心 (3次量化, 同开销)
-  2. E6M2对称窗口: 13候选覆盖更广scale范围, 嵌套不劣于旧5候选
+  2. E6M2对称窗口: 自适应候选数(大5/中7/小9, Attention固定13), 嵌套不劣
   3. Linear输出加权: 权重用 lambda_j=mean(X_rot^2), 激活用 diag(W_hat^T W_hat)
   4. Attention V加权: rho_t = sum_i P[i,t]^2 来自 P^T P (非 E[V_j^2])
-  5. Q/K Hadamard防御: head_dim非64倍数时自动禁用
+  5. SmoothQuant: alpha扫描{None,0.5}, 校准proxy MSE选择, 无量化时严格等价
+  6. P6重排序: Linear alpha选择 + Attention rho vs None比较, 校准集不劣
+  7. Q/K Hadamard防御: head_dim非64倍数时自动禁用
 
 参考:
   [1] HiFloat4 Format for Language Model Inference (arxiv 2602.11287)
   [2] Pretraining LLMs with NVFP4 (arxiv 2509.25149)
-  [3] SmoothQuant (arxiv 2211.10438) — 输出敏感度加权思想
+  [3] SmoothQuant (arxiv 2211.10438) — 对角平衡
   [4] GPTQ (arxiv 2210.17323) — 二阶信息量化补偿
   [5] BoA (ICML 2025) — attention-aware Hessian
 """
@@ -73,6 +75,24 @@ def _dequant_nvfp4(quant_float, scale_float, blk_size=NVFP4_BLK):
     x = quant_float.unflatten(-1, (-1, blk_size))
     x = x * scale_float.unsqueeze(-1)
     return x.flatten(-2, -1).to(torch.float32)
+
+
+def _hif4_dequant(params, shape):
+    deq = (params["sign"] * params["mant"] *
+           params["scale_lv3"] * params["scale_lv2"] * params["scale_factor"])
+    return deq.reshape(shape).to(torch.float32)
+
+
+def _adaptive_n_candidates(shape):
+    numel = 1
+    for d in shape:
+        numel *= int(d)
+    if numel > 4_000_000:
+        return 5
+    elif numel > 1_000_000:
+        return 7
+    else:
+        return 9
 
 
 def _e6m2_candidates(target, n_candidates=3):
@@ -312,6 +332,21 @@ def _compute_v_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim):
     return rho
 
 
+def _attention(q, k, v, q_heads, kv_heads, head_dim):
+    """GQA attention (no mask, matching simulate_scoring.py platform behavior)."""
+    seq = q.shape[0]
+    q_re = q.reshape(seq, q_heads, head_dim).transpose(0, 1)
+    k_re = k.reshape(seq, kv_heads, head_dim).transpose(0, 1)
+    v_re = v.reshape(seq, kv_heads, head_dim).transpose(0, 1)
+    group = q_heads // kv_heads
+    k_exp = k_re.unsqueeze(1).expand(-1, group, -1, -1).reshape(q_heads, seq, head_dim)
+    v_exp = v_re.unsqueeze(1).expand(-1, group, -1, -1).reshape(q_heads, seq, head_dim)
+    scores = torch.matmul(q_re, k_exp.transpose(-1, -2)) / math.sqrt(head_dim)
+    attn = torch.softmax(scores, dim=-1)
+    out = torch.matmul(attn, v_exp)
+    return out.transpose(0, 1).reshape(seq, q_heads * head_dim)
+
+
 # ======================================================================
 # 1. Linear: 校准 + 权重量化
 # ======================================================================
@@ -321,41 +356,80 @@ def hif4_calibration_and_quantize_weight(
     weight_scale: torch.Tensor,
     calib_activation_list: list,
 ) -> dict[str, Any]:
-    """权重 W (离线): Hadamard旋转 + E6M2 scale search (13候选) +
-    校准激活加权的输出敏感度importance。"""
+    """权重 W (离线): SmoothQuant alpha扫描 + Hadamard旋转 + exact微指数 +
+    校准激活 lambda_j 加权。自适应候选数控制时间。"""
     weight_fp = _dequant_nvfp4(weight_quant, weight_scale)
-
+    K = weight_fp.shape[-1]
     H = _random_hadamard(HAD_SIZE, seed=42).to(torch.float32)
-    weight_rot = _apply_hadamard(weight_fp, H)
+    n_final = _adaptive_n_candidates(weight_fp.shape)
 
-    # P2: per-channel importance from calibration activations
-    # (1/n)||X E_W^T||^2 = tr(E_W C_X E_W^T) ≈ sum_j lambda_j (E_W[:,j])^2
-    w_imp = None
-    if calib_activation_list:
-        K = weight_fp.shape[-1]
+    if not calib_activation_list:
+        weight_rot = _apply_hadamard(weight_fp, H)
+        weight_params = _quantize_hif4(weight_rot, n_candidates=n_final)
+        w_hat = _hif4_dequant(weight_params, weight_rot.shape)
+        w_diag = (w_hat ** 2).sum(dim=0).clamp(min=1e-8)
+        return {
+            "weight_params": weight_params,
+            "activation_state": {
+                "hadamard": H.contiguous(),
+                "importance": w_diag.contiguous(),
+                "smooth_scale": None,
+            },
+        }
+
+    calib_acts = [_dequant_nvfp4(aq, asc) for aq, asc in calib_activation_list]
+
+    max_act = torch.zeros(K, dtype=torch.float32)
+    for act in calib_acts:
+        max_act = torch.maximum(max_act, act.abs().amax(dim=0))
+    max_w = weight_fp.abs().amax(dim=0).clamp(min=1e-8)
+
+    # P5+P6: scan alpha in {None, 0.5}, select by weighted recon MSE proxy
+    # Use weight row subsample for scan speed; importance from full calib data
+    n_scan = min(256, weight_fp.shape[0])
+    w_scan = weight_fp[:n_scan]
+    best_proxy = None
+    for alpha in (None, 0.5):
+        if alpha is None:
+            D = torch.ones(K, dtype=torch.float32)
+        else:
+            D = (max_act.clamp(min=1e-8) ** alpha) / (max_w ** (1 - alpha))
+            D = D.clamp(min=1e-4, max=1e4)
+
+        w_rot = _apply_hadamard(w_scan * D, H)
+
         x_sq_sum = torch.zeros(K, dtype=torch.float32)
         total_tokens = 0
-        for act_pair in calib_activation_list:
-            act_fp = _dequant_nvfp4(act_pair[0], act_pair[1])
-            act_rot = _apply_hadamard(act_fp, H)
+        for act in calib_acts:
+            act_rot = _apply_hadamard(act * (1.0 / D), H)
             x_sq_sum += (act_rot ** 2).sum(dim=0)
-            total_tokens += act_fp.shape[0]
-        if total_tokens > 0:
-            w_imp = (x_sq_sum / total_tokens).clamp(min=1e-8)
+            total_tokens += act.shape[0]
+        w_imp = (x_sq_sum / max(total_tokens, 1)).clamp(min=1e-8)
 
-    weight_params = _quantize_hif4(weight_rot, n_candidates=5, importance=w_imp)
+        wp = _quantize_hif4(w_rot, n_candidates=3, importance=w_imp)
+        w_hat = _hif4_dequant(wp, w_rot.shape)
+        proxy = (w_imp * (w_hat - w_rot) ** 2).sum().item() / n_scan
 
-    # diag(W_hat_rot^T W_hat_rot) for activation importance
-    # (1/n)||E_X W_hat^T||^2 ≈ sum_j w_diag_j (E_X[:,j])^2
-    w_hat_rot = (weight_params["sign"] * weight_params["mant"] *
-                 weight_params["scale_lv3"] * weight_params["scale_lv2"] *
-                 weight_params["scale_factor"])
-    w_hat_rot = w_hat_rot.reshape(weight_rot.shape)
-    w_diag = (w_hat_rot ** 2).sum(dim=0).clamp(min=1e-8)
+        if best_proxy is None or proxy < best_proxy[0]:
+            best_proxy = (proxy, alpha, D, w_imp)
+
+    best_alpha = best_proxy[1]
+    D = best_proxy[2]
+    w_imp = best_proxy[3]
+
+    w_smooth = weight_fp * D
+    w_rot = _apply_hadamard(w_smooth, H)
+    weight_params = _quantize_hif4(w_rot, n_candidates=n_final, importance=w_imp)
+
+    w_hat = _hif4_dequant(weight_params, w_rot.shape)
+    w_diag = (w_hat ** 2).sum(dim=0).clamp(min=1e-8)
+
+    smooth_D = D if best_alpha is not None else None
 
     activation_state = {
         "hadamard": H.contiguous(),
         "importance": w_diag.contiguous(),
+        "smooth_scale": smooth_D.contiguous() if smooth_D is not None else None,
     }
 
     return {
@@ -373,21 +447,26 @@ def hif4_dynamic_quantize_activation(
     activation_scale: torch.Tensor,
     activation_state: Any,
 ) -> dict[str, torch.Tensor]:
-    """激活 A (在线): Hadamard旋转 + E6M2 scale search (13候选) +
-    W_hat^T W_hat 加权的输出敏感度importance。"""
+    """激活 A (在线): SmoothQuant D^-1 + Hadamard旋转 + exact微指数 +
+    W_hat^T W_hat 加权。自适应候选数。"""
     act_fp = _dequant_nvfp4(activation_quant, activation_scale)
 
-    H = activation_state.get("hadamard") if isinstance(activation_state, dict) else None
-    if H is not None:
-        act_fp = _apply_hadamard(act_fp, H.to(torch.float32))
-
-    imp = None
     if isinstance(activation_state, dict):
+        D = activation_state.get("smooth_scale")
+        if D is not None:
+            act_fp = act_fp * (1.0 / D.to(torch.float32))
+
+        H = activation_state.get("hadamard")
+        if H is not None:
+            act_fp = _apply_hadamard(act_fp, H.to(torch.float32))
+
         imp = activation_state.get("importance")
         if imp is not None and int(imp.shape[-1]) != int(act_fp.shape[-1]):
             imp = None
+    else:
+        imp = None
 
-    return _quantize_hif4(act_fp, n_candidates=5, importance=imp)
+    return _quantize_hif4(act_fp, n_candidates=_adaptive_n_candidates(act_fp.shape), importance=imp)
 
 
 # ======================================================================
@@ -402,26 +481,52 @@ def hif4_calibration_attention(
 ) -> dict[str, Any]:
     """Attention校准:
     Q/K: 共用Hadamard (保证Q@K^T不变), 旋转后无需重要性加权
-    V:   不旋转, 用 P^T P 的 rho_t 作为 token 级 importance"""
-    q_C = q_num_heads * head_dim
-    k_C = kv_num_heads * head_dim
-
+    V:   不旋转, P6用真实校准Attention MSE比较 rho vs None, 选更优"""
     rho = _compute_v_importance(calib_qkv_list, q_num_heads, kv_num_heads, head_dim)
     calib_seq = rho.shape[1]
     rho_mean = rho.mean(dim=1).repeat_interleave(head_dim).contiguous()
 
-    # 防御: head_dim 非 HAD_SIZE 倍数时禁用 Q/K 旋转,
-    # 否则 64 元素块会跨越 head 边界, 破坏 Q@K^T 等价性
     if head_dim % HAD_SIZE == 0:
         H = _random_hadamard(HAD_SIZE, seed=123).to(torch.float32).contiguous()
     else:
         H = None
 
+    # P6: compare rho vs None on calibration Attention MSE
+    use_rho = True
+    total_elems = sum(s["q"][0].numel() + s["k"][0].numel() + s["v"][0].numel() for s in calib_qkv_list)
+    if total_elems < 500_000:
+        mse_rho = 0.0
+        mse_none = 0.0
+        for sample in calib_qkv_list:
+            q_fp = _dequant_nvfp4(*sample["q"])
+            k_fp = _dequant_nvfp4(*sample["k"])
+            v_fp = _dequant_nvfp4(*sample["v"])
+            seq = v_fp.shape[0]
+
+            q_q, k_q = q_fp, k_fp
+            if H is not None:
+                q_q = _apply_hadamard(q_fp, H)
+                k_q = _apply_hadamard(k_fp, H)
+            q_hat = _hif4_dequant(_quantize_hif4(q_q, n_candidates=13), q_q.shape)
+            k_hat = _hif4_dequant(_quantize_hif4(k_q, n_candidates=13), k_q.shape)
+
+            imp_rho = rho.T.repeat_interleave(head_dim, dim=1) if seq == calib_seq else rho_mean
+            v_hat_rho = _hif4_dequant(_quantize_hif4(v_fp, n_candidates=13, importance=imp_rho), v_fp.shape)
+            v_hat_none = _hif4_dequant(_quantize_hif4(v_fp, n_candidates=13), v_fp.shape)
+
+            ref = _attention(q_fp, k_fp, v_fp, q_num_heads, kv_num_heads, head_dim)
+            out_rho = _attention(q_hat, k_hat, v_hat_rho, q_num_heads, kv_num_heads, head_dim)
+            out_none = _attention(q_hat, k_hat, v_hat_none, q_num_heads, kv_num_heads, head_dim)
+            mse_rho += ((out_rho - ref) ** 2).mean().item()
+            mse_none += ((out_none - ref) ** 2).mean().item()
+
+        use_rho = mse_rho <= mse_none
+
     q_state = {"hadamard": H}
     k_state = {"hadamard": H}
     v_state = {
-        "rho": rho.contiguous(),
-        "rho_mean": rho_mean,
+        "rho": rho.contiguous() if use_rho else None,
+        "rho_mean": rho_mean if use_rho else None,
         "calib_seq": calib_seq,
     }
 
