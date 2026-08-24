@@ -3,14 +3,27 @@
 > 适用范围：秋招 AI Infra 岗位（昇腾 NPU / vLLM / 大模型推理方向）
 > 使用方式：每节先记结论加粗部分，再向下展开证据。面试时按"是什么 → 为什么 → 怎么做 → 注意点"四段式回答。
 
+AI Infra = AI 基础设施（AI Infrastructure），负责让 AI 模型能够高效、稳定、大规模地训练和运行。
 ---
 
 ## 一、文件与目录
 
 ### Q1. `cp / mv / rm` 的常见坑？
-- `cp -a` 保留权限/属主/时间戳，**目录拷贝必须加 `-a` 或 `-r`**。
+- `cp -a` 保留权限/属主/时间戳，**目录拷贝必须加 `-a` 或 `-r`**。  
+  -r = 递归复制目录 `cp -r source_dir target_dir`
+  -a = archive 档案，递归 + 尽可能完整保留属性
 - `mv` 跨文件系统会退化为 `cp + rm`（inode 改变，不能保证原子）。
+  mv —— 移动 / 重命名  
+  基本格式：`mv [选项] 源文件 目标位置`
+    移动：`mv a.txt /tmp/` -> 当前目录/a.txt： /tmp/a.txt
+    重命名：mv old.txt new.txt
+  inode 是文件系统内部的数据结构。
+  mv /data/a /mnt/a
 - `rm -rf` 通配符：**绝对不要写 `rm -rf $FOO/*`，若 `$FOO` 为空，会展开成 `rm -rf /*`**，应写 `rm -rf "${FOO:?unset}"/*`。
+  rm —— 删除
+  基本格式：rm [选项] 文件
+    删除多个文件：rm a.txt b.txt c.txt
+    删除目录： rm -r dir/
 
 ### Q2. 软链接 vs 硬链接？
 | 维度 | 硬链接 (hard link) | 软链接 (symbolic link) |
@@ -20,36 +33,56 @@
 | 删除原文件 | 仍可用 | 失效（dangling） |
 | 命令 | `ln src dst` | `ln -s src dst` |
 | inode | 与原文件相同 | 不同 |
+ln : 创建链接的命令
+dentry是 Linux VFS(Virtual File System，虚拟文件系统) 中用于表示目录项的结构，建立文件名与 inode 之间的关联，并参与路径名解析；
 
-**面试要点**：`ls -i file` 看 inode；硬链接计数用 `ls -l` 第二列。
+**面试要点**：`ls -i file` 看 inode；硬链接计数用 `ls -l file` 第二列。
 
 ### Q3. 权限 `rwxr-xr-x` 的数字？
 - `r=4 w=2 x=1`，三组（owner/group/other）累加。
 - `chmod 755 file` = `rwxr-xr-x`。
 - 目录的 `x` 含义是"可进入"（cd 进去），不是执行。
-- `chmod +t` 设 sticky bit：目录下文件只能被属主删除（典型 `/tmp`）。
-- `chmod g+s` 设 SGID：新建文件继承组。
-- `chmod 4755` 设 SUID：以**文件属主身份**执行（典型 `passwd` 命令）。
+  chmod 就是修改文件权限。基本语法：`chmod 权限 文件`
 
 ### Q4. `umask 022` 含义？
 - 默认目录权限 = `777 & ~022 = 755`。
 - 默认文件权限 = `666 & ~022 = 644`。
 - **关键**：文件默认不带 `x`，避免代码自动可执行。
+  umask = 创建文件时，默认要去掉哪些权限。  
 
 ### Q5. `find` 常用组合？
 ```bash
 # 1. 按时间清理：7 天前修改的 .log 删除
 find /var/log -name '*.log' -mtime +7 -delete
+  mtime = 文件内容最后一次修改的时间 
+  m = modification（修改）
+  time = 时间
 
 # 2. 按大小找：>100M 的文件
 find / -type f -size +100M 2>/dev/null
+  -type f：只找普通文件
+  2>/dev/null = 把 stderr（错误信息）扔进 /dev/null，也就是不显示错误。
 
 # 3. 按权限找 SUID（安全审计）
 find / -perm -4000 -type f 2>/dev/null
+  SUID 特殊权限位 → 数字：4000 → 作用：程序以“文件所有者”的有效身份运行
 
 # 4. -exec 安全版（处理文件名带空格/换行）：用 -print0 + xargs -0
 find . -name '*.py' -print0 | xargs -0 wc -l
-```
+  -print0：找到文件后，不用换行分隔，而使用 NUL（空字符）分隔。 -print0 = 安全地输出文件名
+  |：管道（pipe）, 作用是 左边命令的输出,传给右边命令
+  xargs：把前面传过来的文件名，转换成后面命令的参数。
+  -print0 使用 NUL 分隔文件名；xargs -0 按照 NUL 分隔读取
+  wc：word count，统计数量
+  -l：统计行数（line）
+
+``` 
+  find 基本语法：find [路径] [条件]
+    find → 从哪里开始找 → 按照什么条件找
+  加条件 -name： find [路径] -name [文件名]  
+    find . -name "*.txt"  从当前目录开始，寻找名字匹配 *.txt 的文件。
+  加操作  find [路径] [条件] [操作] 
+    find . -name "*.txt" -delete  从当前目录找, 找 txt 文件, 找到后删除
 
 ---
 
@@ -57,38 +90,98 @@ find . -name '*.py' -print0 | xargs -0 wc -l
 
 ### Q6. `grep` 与 `egrep` 区别？常用参数？
 - `egrep` = `grep -E`，支持扩展正则（`+`、`|`、`()`）。
-- 常用：`-i` 忽略大小写、`-v` 反选、`-n` 显示行号、`-r` 递归、`-c` 计数、`-A/-B/-C N` 上下文。
+  -E：使用扩展正则表达式（Extended Regular Expression）。
+- 常用：`-i` 忽略大小写、`-v` 反选（不匹配的行）、`-n` 显示行号、`-r` 递归、`-c` 计数（统计匹配的行数（count））、`-A/-B/-C N` 上下文。
 - `grep -P` 启用 PCRE（支持 `\d` `\s` 等）。
 - `grep -l` 只列出匹配文件名（用于跨文件批量定位）。
+  grep：在文本中搜索指定的内容。
+  基本语法： grep [选项] "要搜索的内容" 文件
+  -A 2：显示匹配行 以及后面 2 行。-A = After   后面
+  -B 2：显示匹配行 以及前面 2 行。-B = Before  前面
+  -C 2：显示匹配行前后各 2 行。   -C = Context 上下文
+
 
 ### Q7. `sed` 替换、原地修改、行范围？
 ```bash
 # 替换每行第一个 foo 为 bar
-sed 's/foo/bar/'
+sed 's/foo/bar/'  # 默认每一行只替换第一个 foo。
+    s / foo / bar /
+    │   │     │
+    │   │     └── 替换成什么
+    │   └──────── 找什么
+    └──────────── substitute（替换）
 
 # 全局替换
 sed 's/foo/bar/g'
+  g = global：每一行中所有匹配的 foo 都替换。
 
 # 原地修改（GNU sed），等价 mac 上 sed -i ''
 sed -i 's/foo/bar/g' file
+  sed 默认不会修改原文件
+  读取 file → 处理 → 把结果显示到终端。原来的 file 通常不会被修改。
+  -i = in-place：直接修改原文件。
 
 # 只对 10-20 行处理
 sed '10,20s/foo/bar/g' file
+  10,20：指定行范围
 
 # 删除空行
 sed '/^$/d' file
+  ^表示：行的开头；$表示：行的结尾
+  ^$表示：从行开头直接到行结尾，中间什么都没有。（即 空行）
+  d表示：delete，删除。
 
 # 第 5 行后插入
 sed '5a\hello' file
+  a表示：append，追加
 ```
+  sed (stream editor,流编辑器)：一个用于处理文本的命令行工具，特别常用于查找、替换、删除、插入文本。
+  基本语法: sed '操作' 文件
+  s = substitute（替换）
+  g = global（全部）
+  -i = 原地修改
+  d = delete（删除）
+  a = append（追加）
+
 
 ### Q8. `awk` 基本范式与内建变量？
 - 内建变量：`NR`（行号）、`NF`（字段数）、`$0`（整行）、`$1..$N`（字段）、`FS`（字段分隔符）、`OFS`（输出分隔符）。
 - 结构：`BEGIN {} 主循环{} END {}`。
+  awk '
+    BEGIN { # 开始处理之前执行一次}
+    {
+        # 每读取一行执行一次
+    }
+    END { # 全部处理完之后执行一次}
+  ' file
+      开始
+      ↓
+      BEGIN
+      ↓
+      读取第1行 → 主循环
+      ↓
+      读取第2行 → 主循环
+      ↓
+      读取第3行 → 主循环
+      ↓
+      ...
+      ↓
+      全部结束
+      ↓
+      END
 - 例：统计 access.log 每个 IP 出现次数并排序
 ```bash
 awk '{ip_cnt[$1]++} END {for (ip in ip_cnt) print ip_cnt[ip], ip}' access.log | sort -rn | head
-```
+  ip_cnt[$1]++： awk 的数组计数。
+``` 
+  awk 处理“按列排列的文本数据”的命令。awk：把文本按行读取，再把每一行切成多个字段（列），然后对这些字段进行处理。awk = 按行读取 → 按列拆分 → 对列进行处理。
+  awk 基本语法：awk '条件 {操作}' 文件
+  $0 表示：当前整行内容。
+  NF：Number of Fields，当前行有多少个字段。
+  NR：Number of Records，当前是第几行。
+  FS：Field Separator。告诉 awk：一行数据应该按照什么东西切成不同的列。默认情况下，awk 通常按照空白字符分隔。
+  OFS：Output Field Separator，输出字段分隔符。
+  head：默认取前 10 行。
 
 ### Q9. `sort` `uniq` `cut` `tr` `xargs` 组合？
 ```bash
@@ -106,6 +199,17 @@ find . -name '*.pyc' | xargs rm -f
 # 安全版（文件名带空格）
 find . -name '*.pyc' -print0 | xargs -0 rm -f
 ```
+  sort：排序  sort 文件 # 默认按照字典序排序。
+    -n：按数字大小排序。
+    -r：反向排序。
+  uniq：去除连续重复行。uniq 只处理相邻的重复行。
+    sort file | uniq 先排序，再uniq。才能真正合并重复项。
+    -c：统计每行出现次数。
+  cut：截取列  cut 适合处理固定分隔符的文本。
+  基本语法：cut -d分隔符 -f列号 文件
+  tr：转换或删除字符。   tr 用途：把字符替换成另一个字符，或者删除字符。
+  xargs：把输入变成参数。xargs：把 stdin（标准输入）中的内容，转换成后面命令的参数。
+    echo "a.txt b.txt" | xargs rm  等价于 rm a.txt b.txt
 
 ---
 
