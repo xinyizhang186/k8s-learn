@@ -1,0 +1,34 @@
+# =============================================================================
+# 11 — CronJob：定时任务
+# -----------------------------------------------------------------------------
+# CronJob 按 Cron 表达式定时创建 Job，适合周期性任务（备份、报表、清理）。
+# 表达式格式：分 时 日 月 周 (5 字段)
+# 这里每分钟打印一次 Redis 当前访问数，模拟"定时巡检报告"。
+# 命令: kubectl -n learn-space get cronjob
+#       kubectl -n learn-space logs -l job-name --tail=10
+# =============================================================================
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: count-reporter
+  namespace: learn-space
+spec:
+  schedule: "*/1 * * * *" # 每分钟执行一次
+  concurrencyPolicy: Forbid # 禁止并发：上一次没跑完则跳过本次
+  successfulJobsHistoryLimit: 3 # 保留 3 个成功记录
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: reporter
+              image: redis:7-alpine
+              command:
+                - sh
+                - -c
+                - |
+                  echo "[cronjob] $(date) 巡检报告:"
+                  echo "  当前访客数: $(redis-cli -h redis get visits)"
+                  echo "  welcome:    $(redis-cli -h redis get welcome)"

@@ -1,0 +1,29 @@
+# =============================================================================
+# 07 — Ingress：HTTP/HTTPS 七层路由入口
+# -----------------------------------------------------------------------------
+# Ingress 把外部 HTTP 流量按域名/路径路由到集群内 Service，支持 TLS 终结、虚拟主机。
+# 需集群已安装 Ingress Controller（如 ingress-nginx）。
+# kind 集群默认不含 Ingress Controller，本项目的 setup-kind.sh 会自动安装。
+# 命令: kubectl -n learn-space get ingress
+# 访问: 配置 /etc/hosts 把 k8s-learn.local 指向节点 IP，或用 curl --resolve
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+  namespace: learn-space
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: k8s-learn.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web
+                port:
+                  number: 80

@@ -1,0 +1,32 @@
+# =============================================================================
+# 08 — HorizontalPodAutoscaler (HPA)：按负载自动水平扩缩容
+# -----------------------------------------------------------------------------
+# HPA 根据 CPU/内存利用率或自定义指标，自动调整 Deployment 副本数。
+# 前提：集群需安装 metrics-server（kind 默认无，setup-kind.sh 会安装）。
+# 这里设定：CPU 超过 70% 自动扩容，2~5 副本。
+# 验证: kubectl -n learn-space get hpa
+#       kubectl -n learn-space autoscale deploy/web --min=2 --max=5 --cpu-percent=70
+# 压测: while true; do curl -s http://<nodeip>:30080 >/dev/null; done
+# =============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web
+  namespace: learn-space
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60 # 缩容冷却 60s，避免抖动
