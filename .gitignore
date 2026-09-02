@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Testing
+.pytest_cache/
+
+# Runtime data
+data/knowledgepilot.db
+data/pdfs/*.pdf
+
+# Environment
+.env
