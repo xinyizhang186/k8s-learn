@@ -1,0 +1,80 @@
+{
+  "project": "AgentENV",
+  "generated_at": "2026-08-31",
+  "source_root": "https://kvcache-ai.github.io/AgentENV/latest/",
+  "markdown_count": 18,
+  "files": [
+    {
+      "name": "00_阅读导航与资料索引.md",
+      "bytes": 2896
+    },
+    {
+      "name": "01_项目概览与核心能力.md",
+      "bytes": 4072
+    },
+    {
+      "name": "02_系统架构与核心组件.md",
+      "bytes": 4236
+    },
+    {
+      "name": "03_安装部署与硬件要求.md",
+      "bytes": 3779
+    },
+    {
+      "name": "04_Template_Sandbox_Snapshot生命周期.md",
+      "bytes": 3718
+    },
+    {
+      "name": "05_aenv_CLI使用手册.md",
+      "bytes": 3252
+    },
+    {
+      "name": "06_HTTP_API_E2B与Sandbox_Proxy.md",
+      "bytes": 3572
+    },
+    {
+      "name": "07_认证_网络策略与安全边界.md",
+      "bytes": 4058
+    },
+    {
+      "name": "08_存储_OverlayBD_ublk与按需加载.md",
+      "bytes": 3885
+    },
+    {
+      "name": "09_分布式控制面_调度_Redis与P2P.md",
+      "bytes": 3902
+    },
+    {
+      "name": "10_配置文件与环境变量.md",
+      "bytes": 4973
+    },
+    {
+      "name": "11_源码目录_模块职责与关键依赖.md",
+      "bytes": 4810
+    },
+    {
+      "name": "12_测试_持久化_可观测性与故障排查.md",
+      "bytes": 4382
+    },
+    {
+      "name": "13_Custom_Extension扩展机制.md",
+      "bytes": 3343
+    },
+    {
+      "name": "14_版本_性能_限制与生产风险.md",
+      "bytes": 4272
+    },
+    {
+      "name": "15_快速上手_学习路线与面试要点.md",
+      "bytes": 6442
+    },
+    {
+      "name": "16_官方资料来源.md",
+      "bytes": 4029
+    },
+    {
+      "name": "README.md",
+      "bytes": 2896
+    }
+  ]
+}
