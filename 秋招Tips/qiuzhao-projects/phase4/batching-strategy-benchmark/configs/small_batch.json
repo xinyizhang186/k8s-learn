@@ -1,0 +1,19 @@
+{
+  "name": "small_batch",
+  "description": "小 batch 策略：延迟优先",
+  "vllm_args": {
+    "max_num_seqs": 32,
+    "max_num_batched_tokens": 1024,
+    "enable_chunked_prefill": true,
+    "enable_prefix_caching": true,
+    "gpu_memory_utilization": 0.9,
+    "block_size": 128
+  },
+  "test_config": {
+    "num_requests": 200,
+    "concurrent": 5,
+    "rate": 0,
+    "max_tokens": 100,
+    "prompt_dist": "mixed"
+  }
+}

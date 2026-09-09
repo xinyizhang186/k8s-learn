@@ -1,0 +1,89 @@
+corpus=8912  eval=[0:500] 500 questions
+[retriever] BM25 ready (8912 docs)
+[retriever] Dense ready (dim=384)
+retriever ready
+[retriever] loading cross-encoder reranker ...
+  1/500 done  elapsed 8s
+  10/500 done  elapsed 31s
+  20/500 done  elapsed 54s
+  30/500 done  elapsed 78s
+  40/500 done  elapsed 104s
+  50/500 done  elapsed 130s
+  60/500 done  elapsed 155s
+  70/500 done  elapsed 179s
+  80/500 done  elapsed 205s
+  90/500 done  elapsed 233s
+  100/500 done  elapsed 254s
+  110/500 done  elapsed 279s
+  120/500 done  elapsed 307s
+  130/500 done  elapsed 334s
+  140/500 done  elapsed 360s
+  150/500 done  elapsed 385s
+  160/500 done  elapsed 408s
+  170/500 done  elapsed 433s
+  180/500 done  elapsed 459s
+  190/500 done  elapsed 486s
+  200/500 done  elapsed 510s
+  210/500 done  elapsed 538s
+  220/500 done  elapsed 562s
+  230/500 done  elapsed 585s
+  240/500 done  elapsed 611s
+  250/500 done  elapsed 637s
+  260/500 done  elapsed 660s
+  270/500 done  elapsed 685s
+  280/500 done  elapsed 709s
+  290/500 done  elapsed 731s
+  300/500 done  elapsed 756s
+  310/500 done  elapsed 783s
+  320/500 done  elapsed 809s
+  330/500 done  elapsed 833s
+  340/500 done  elapsed 859s
+  350/500 done  elapsed 883s
+  360/500 done  elapsed 906s
+  370/500 done  elapsed 931s
+  380/500 done  elapsed 958s
+  390/500 done  elapsed 982s
+  400/500 done  elapsed 1004s
+  410/500 done  elapsed 1030s
+  420/500 done  elapsed 1056s
+  430/500 done  elapsed 1077s
+  440/500 done  elapsed 1105s
+  450/500 done  elapsed 1131s
+  460/500 done  elapsed 1153s
+  470/500 done  elapsed 1177s
+  480/500 done  elapsed 1203s
+  490/500 done  elapsed 1231s
+  500/500 done  elapsed 1254s
+
+=== OVERALL ===
+metric               naive        hybrid       agentic
+em                   0.054          0.07         0.068
+f1                  0.0945        0.1092        0.1109
+ctx_recall           0.799         0.887         0.907
+ctx_p@2              0.475          0.68         0.645
+ctx_p@4              0.301         0.401         0.386
+latency             0.0644        0.8827         1.527
+avg_rounds             1.0           1.0          1.86
+
+=== BY TYPE ===
+-- bridge --
+metric               naive        hybrid       agentic
+em                  0.0525         0.065        0.0625
+f1                  0.0912        0.1041        0.1062
+ctx_recall          0.7762        0.8612        0.8862
+ctx_p@2             0.4763         0.645        0.6075
+ctx_p@4             0.2994         0.385        0.3694
+latency             0.0675        0.8904        1.6594
+avg_rounds             1.0           1.0          2.03
+-- comparison --
+metric               naive        hybrid       agentic
+em                    0.06          0.09          0.09
+f1                  0.1078        0.1294        0.1294
+ctx_recall            0.89          0.99          0.99
+ctx_p@2               0.47          0.82         0.795
+ctx_p@4             0.3075         0.465        0.4525
+latency              0.052        0.8518        0.9974
+avg_rounds             1.0           1.0          1.18
+
+results -> results/exp_full.json
+total elapsed 1254s

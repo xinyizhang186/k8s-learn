@@ -1,0 +1,1218 @@
+{
+  "n": 20,
+  "summary": {
+    "naive": {
+      "em": 0.1,
+      "f1": 0.1367,
+      "ctx_recall": 0.825,
+      "ctx_p@2": 0.525,
+      "ctx_p@4": 0.325,
+      "latency": 0.0606,
+      "avg_rounds": 1.0
+    },
+    "hybrid": {
+      "em": 0.1,
+      "f1": 0.1367,
+      "ctx_recall": 0.9,
+      "ctx_p@2": 0.825,
+      "ctx_p@4": 0.4125,
+      "latency": 1.8141,
+      "avg_rounds": 1.0
+    },
+    "agentic": {
+      "em": 0.15,
+      "f1": 0.1867,
+      "ctx_recall": 0.975,
+      "ctx_p@2": 0.725,
+      "ctx_p@4": 0.425,
+      "latency": 2.5177,
+      "avg_rounds": 1.8
+    }
+  },
+  "by_type": {
+    "naive": {
+      "bridge": {
+        "em": 0.0625,
+        "f1": 0.1083,
+        "ctx_recall": 0.7812,
+        "ctx_p@2": 0.5312,
+        "ctx_p@4": 0.3281,
+        "latency": 0.0591,
+        "avg_rounds": 1.0
+      },
+      "comparison": {
+        "em": 0.25,
+        "f1": 0.25,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.3125,
+        "latency": 0.0664,
+        "avg_rounds": 1.0
+      }
+    },
+    "hybrid": {
+      "bridge": {
+        "em": 0.0625,
+        "f1": 0.1083,
+        "ctx_recall": 0.875,
+        "ctx_p@2": 0.8125,
+        "ctx_p@4": 0.4062,
+        "latency": 1.8603,
+        "avg_rounds": 1.0
+      },
+      "comparison": {
+        "em": 0.25,
+        "f1": 0.25,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.875,
+        "ctx_p@4": 0.4375,
+        "latency": 1.6292,
+        "avg_rounds": 1.0
+      }
+    },
+    "agentic": {
+      "bridge": {
+        "em": 0.125,
+        "f1": 0.1708,
+        "ctx_recall": 0.9688,
+        "ctx_p@2": 0.6875,
+        "ctx_p@4": 0.4219,
+        "latency": 2.6756,
+        "avg_rounds": 1.94
+      },
+      "comparison": {
+        "em": 0.25,
+        "f1": 0.25,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.875,
+        "ctx_p@4": 0.4375,
+        "latency": 1.8859,
+        "avg_rounds": 1.25
+      }
+    }
+  },
+  "per_question": [
+    {
+      "id": "5a90cb205542995651fb51fe",
+      "question": "Who was the probably maternal grandfather of Edmund II?",
+      "gold": "Thored",
+      "type": "bridge",
+      "gold_titles": [
+        "Edmund Ironside",
+        "Ælfgifu of York"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.0,
+        "latency": 0.03601789474487305,
+        "rounds": 1,
+        "pred": "Edmund Maurice Burke Roche",
+        "gold": "Thored"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 7.075777530670166,
+        "rounds": 1,
+        "pred": "Edmund Maurice Burke Roche",
+        "gold": "Thored"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 2.456421375274658,
+        "rounds": 2,
+        "pred": "Edmund Maurice Burke Roche",
+        "gold": "Thored",
+        "query_variants": [
+          "Who was the probably maternal grandfather of Edmund II?",
+          "Edmund Maurice Burke Roche"
+        ]
+      }
+    },
+    {
+      "id": "5ae70ed7554299572ea546a1",
+      "question": "Victor Varnada directed Twisted Fortune, which starred which brother of Eddie Murphy?",
+      "gold": "Charlie Murphy",
+      "type": "bridge",
+      "gold_titles": [
+        "Charlie Murphy",
+        "Twisted Fortune"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.047605276107788086,
+        "rounds": 1,
+        "pred": "Coming",
+        "gold": "Charlie Murphy"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 1.1697657108306885,
+        "rounds": 1,
+        "pred": "Coming",
+        "gold": "Charlie Murphy"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 2.1699166297912598,
+        "rounds": 2,
+        "pred": "Coming",
+        "gold": "Charlie Murphy",
+        "query_variants": [
+          "Victor Varnada directed Twisted Fortune, which starred which brother of Eddie Murphy?",
+          "Coming director"
+        ]
+      }
+    },
+    {
+      "id": "5ae6050f55429929b0807a5e",
+      "question": "This singer of A Rather Blustery Day also voiced what hedgehog?",
+      "gold": "Sonic",
+      "type": "bridge",
+      "gold_titles": [
+        "A Rather Blustery Day",
+        "Jim Cummings"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.039076805114746094,
+        "rounds": 1,
+        "pred": "Rather Blustery Day",
+        "gold": "Sonic"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.451110601425171,
+        "rounds": 1,
+        "pred": "Rather Blustery Day",
+        "gold": "Sonic"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.5,
+        "latency": 2.5661888122558594,
+        "rounds": 2,
+        "pred": "Rather Blustery Day",
+        "gold": "Sonic",
+        "query_variants": [
+          "This singer of A Rather Blustery Day also voiced what hedgehog?",
+          "Walt Disney singer"
+        ]
+      }
+    },
+    {
+      "id": "5abc5603554299700f9d7875",
+      "question": "The Lisbon Traviata revolves around fans of the soprano who was of what nationality?",
+      "gold": "Greek-American",
+      "type": "bridge",
+      "gold_titles": [
+        "Maria Callas",
+        "The Lisbon Traviata"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.0574800968170166,
+        "rounds": 1,
+        "pred": "Off-Broadway",
+        "gold": "Greek-American"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 1.6146419048309326,
+        "rounds": 1,
+        "pred": "Off-Broadway",
+        "gold": "Greek-American"
+      },
+      "agentic": {
+        "em": 1.0,
+        "f1": 1.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 3.035550832748413,
+        "rounds": 2,
+        "pred": "Greek-American",
+        "gold": "Greek-American",
+        "query_variants": [
+          "The Lisbon Traviata revolves around fans of the soprano who was of what nationality?",
+          "Maria Callas"
+        ]
+      }
+    },
+    {
+      "id": "5a7d2afb554299452d57bb41",
+      "question": "The Story of Them Featuring Van Morrison is a compilation album recorded by what Northern Irish band formed in Belfast in April 1964?",
+      "gold": "Them",
+      "type": "bridge",
+      "gold_titles": [
+        "The Story of Them Featuring Van Morrison",
+        "Them (band)"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.09958291053771973,
+        "rounds": 1,
+        "pred": "The Story",
+        "gold": "Them"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.868800163269043,
+        "rounds": 1,
+        "pred": "The Story",
+        "gold": "Them"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.5,
+        "latency": 3.558783531188965,
+        "rounds": 2,
+        "pred": "The Story",
+        "gold": "Them",
+        "query_variants": [
+          "The Story of Them Featuring Van Morrison is a compilation album recorded by what Northern Irish band formed in Belfast in April 1964?",
+          "Gloria"
+        ]
+      }
+    },
+    {
+      "id": "5ae17f1e5542990adbacf7a6",
+      "question": "In what region of Argentina is the city of Gualeguaychu located? ",
+      "gold": "Mesopotamia",
+      "type": "bridge",
+      "gold_titles": [
+        "Entre Ríos Province",
+        "Gualeguaychú, Entre Ríos"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.0,
+        "latency": 0.05010247230529785,
+        "rounds": 1,
+        "pred": "The National University",
+        "gold": "Mesopotamia"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.002943992614746,
+        "rounds": 1,
+        "pred": "Valle",
+        "gold": "Mesopotamia"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.5,
+        "latency": 2.016824722290039,
+        "rounds": 2,
+        "pred": "Valle",
+        "gold": "Mesopotamia",
+        "query_variants": [
+          "In what region of Argentina is the city of Gualeguaychu located? ",
+          "Valle born location"
+        ]
+      }
+    },
+    {
+      "id": "5a78e86f55429974737f78fb",
+      "question": "What does the unique calendar system in Japan, who the first Emperor of Japan created, emphasize?",
+      "gold": "the long history of Japan",
+      "type": "bridge",
+      "gold_titles": [
+        "Emperor Jimmu",
+        "Japanese imperial year"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.5,
+        "latency": 0.08245038986206055,
+        "rounds": 1,
+        "pred": "The Japanese",
+        "gold": "the long history of Japan"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.5034523010253906,
+        "rounds": 1,
+        "pred": "The Japanese",
+        "gold": "the long history of Japan"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.5,
+        "latency": 2.583357810974121,
+        "rounds": 2,
+        "pred": "The Japanese",
+        "gold": "the long history of Japan",
+        "query_variants": [
+          "What does the unique calendar system in Japan, who the first Emperor of Japan created, emphasize?",
+          "The Japanese"
+        ]
+      }
+    },
+    {
+      "id": "5a8f08c2554299458435d530",
+      "question": "Sian Gibson co-wrote which British sitcom, set around a supermarket and car share scheme?",
+      "gold": "Peter Kay's Car Share",
+      "type": "bridge",
+      "gold_titles": [
+        "Peter Kay's Car Share",
+        "Sian Gibson"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.3333333333333333,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.06604123115539551,
+        "rounds": 1,
+        "pred": "Peter Kay",
+        "gold": "Peter Kay's Car Share"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.3333333333333333,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.271803855895996,
+        "rounds": 1,
+        "pred": "Peter Kay",
+        "gold": "Peter Kay's Car Share"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.3333333333333333,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 2.5739822387695312,
+        "rounds": 2,
+        "pred": "Peter Kay",
+        "gold": "Peter Kay's Car Share",
+        "query_variants": [
+          "Sian Gibson co-wrote which British sitcom, set around a supermarket and car share scheme?",
+          "Peter Kay author"
+        ]
+      }
+    },
+    {
+      "id": "5ab2ac3d55429929539467ce",
+      "question": "Be Quick '28  football club is locayed in what province?",
+      "gold": "Overijssel",
+      "type": "bridge",
+      "gold_titles": [
+        "Be Quick '28",
+        "Zwolle"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.04370403289794922,
+        "rounds": 1,
+        "pred": "Be Quick",
+        "gold": "Overijssel"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 1.1449573040008545,
+        "rounds": 1,
+        "pred": "Be Quick",
+        "gold": "Overijssel"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.5,
+        "latency": 2.1017322540283203,
+        "rounds": 2,
+        "pred": "Be Quick",
+        "gold": "Overijssel",
+        "query_variants": [
+          "Be Quick '28  football club is locayed in what province?",
+          "Zwolle"
+        ]
+      }
+    },
+    {
+      "id": "5a7df7115542990b8f503b0f",
+      "question": "Who was born first out of Todd Field and Aaron Katz?",
+      "gold": "William Todd Field",
+      "type": "comparison",
+      "gold_titles": [
+        "Aaron Katz (filmmaker)",
+        "Todd Field"
+      ],
+      "naive": {
+        "em": 1.0,
+        "f1": 1.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.25,
+        "latency": 0.04617023468017578,
+        "rounds": 1,
+        "pred": "William Todd Field",
+        "gold": "William Todd Field"
+      },
+      "hybrid": {
+        "em": 1.0,
+        "f1": 1.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.6707532405853271,
+        "rounds": 1,
+        "pred": "William Todd Field",
+        "gold": "William Todd Field"
+      },
+      "agentic": {
+        "em": 1.0,
+        "f1": 1.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 2.6929266452789307,
+        "rounds": 2,
+        "pred": "William Todd Field",
+        "gold": "William Todd Field",
+        "query_variants": [
+          "Who was born first out of Todd Field and Aaron Katz?",
+          "October born location"
+        ]
+      }
+    },
+    {
+      "id": "5ae724ec5542995703ce8bd8",
+      "question": "Where is the home of the common party princess voiced by Idina Menzel?",
+      "gold": "Arendelle",
+      "type": "bridge",
+      "gold_titles": [
+        "Elsa (Disney)",
+        "Party princess"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.05475020408630371,
+        "rounds": 1,
+        "pred": "Broadway",
+        "gold": "Arendelle"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 2.0136849880218506,
+        "rounds": 1,
+        "pred": "Broadway",
+        "gold": "Arendelle"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 3.019211769104004,
+        "rounds": 2,
+        "pred": "Broadway",
+        "gold": "Arendelle",
+        "query_variants": [
+          "Where is the home of the common party princess voiced by Idina Menzel?",
+          "She born location"
+        ]
+      }
+    },
+    {
+      "id": "5ae446175542995ad6573d1f",
+      "question": "Who had a perfect game against The Ignitor's team in 1998?",
+      "gold": "David Wells",
+      "type": "bridge",
+      "gold_titles": [
+        "1998 Minnesota Twins season",
+        "Paul Molitor"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.25,
+        "latency": 0.05626726150512695,
+        "rounds": 1,
+        "pred": "Tom Kelly",
+        "gold": "David Wells"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.8374910354614258,
+        "rounds": 1,
+        "pred": "Tom Kelly",
+        "gold": "David Wells"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.0,
+        "latency": 6.692405700683594,
+        "rounds": 4,
+        "pred": "Tom Kelly",
+        "gold": "David Wells",
+        "query_variants": [
+          "Who had a perfect game against The Ignitor's team in 1998?",
+          "Tom Kelly",
+          "Who had a perfect game against The Ignitor's team in 1998? John Francis Kelly May",
+          "Who had a perfect game against The Ignitor's team in 1998? John Francis Kelly May"
+        ]
+      }
+    },
+    {
+      "id": "5ab8f7535542991b5579f0a7",
+      "question": "Which film was released first: Sacred Planet or Oz the Great and Powerful?",
+      "gold": "Sacred Planet",
+      "type": "comparison",
+      "gold_titles": [
+        "Oz the Great and Powerful",
+        "Sacred Planet"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.06355500221252441,
+        "rounds": 1,
+        "pred": "Milk",
+        "gold": "Sacred Planet"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.3703522682189941,
+        "rounds": 1,
+        "pred": "Milk",
+        "gold": "Sacred Planet"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.3646240234375,
+        "rounds": 1,
+        "pred": "Milk",
+        "gold": "Sacred Planet",
+        "query_variants": [
+          "Which film was released first: Sacred Planet or Oz the Great and Powerful?"
+        ]
+      }
+    },
+    {
+      "id": "5ae3dce45542994393b9e783",
+      "question": "Oak Beach, New York and Great South Bay are both situated between what same island?",
+      "gold": "Long Island",
+      "type": "bridge",
+      "gold_titles": [
+        "Great South Bay",
+        "Oak Beach, New York"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.06453299522399902,
+        "rounds": 1,
+        "pred": "yes",
+        "gold": "Long Island"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.2417995929718018,
+        "rounds": 1,
+        "pred": "yes",
+        "gold": "Long Island"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.2746798992156982,
+        "rounds": 1,
+        "pred": "yes",
+        "gold": "Long Island",
+        "query_variants": [
+          "Oak Beach, New York and Great South Bay are both situated between what same island?"
+        ]
+      }
+    },
+    {
+      "id": "5abed2b45542990832d3a0d0",
+      "question": "Shannon Purser played the role of June Acosta in a 2017 horror film directed by who?",
+      "gold": "John R. Leonetti",
+      "type": "bridge",
+      "gold_titles": [
+        "Shannon Purser",
+        "Wish Upon"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.0817570686340332,
+        "rounds": 1,
+        "pred": "June Acosta",
+        "gold": "John R. Leonetti"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 1.3380582332611084,
+        "rounds": 1,
+        "pred": "June Acosta",
+        "gold": "John R. Leonetti"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 2.785860300064087,
+        "rounds": 2,
+        "pred": "June Acosta",
+        "gold": "John R. Leonetti",
+        "query_variants": [
+          "Shannon Purser played the role of June Acosta in a 2017 horror film directed by who?",
+          "She director"
+        ]
+      }
+    },
+    {
+      "id": "5abd6db755429933744ab7d0",
+      "question": "What was the nationality of the author of \"The Sunlight on the Garden\"?",
+      "gold": "Irish",
+      "type": "bridge",
+      "gold_titles": [
+        "Louis MacNeice",
+        "The Sunlight on the Garden"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.25,
+        "latency": 0.06108593940734863,
+        "rounds": 1,
+        "pred": "Scottish",
+        "gold": "Irish"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 1.441295862197876,
+        "rounds": 1,
+        "pred": "Scottish",
+        "gold": "Irish"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 2.2784135341644287,
+        "rounds": 2,
+        "pred": "Day-Lewis",
+        "gold": "Irish",
+        "query_variants": [
+          "What was the nationality of the author of \"The Sunlight on the Garden\"?",
+          "Louis MacNeice author"
+        ]
+      }
+    },
+    {
+      "id": "5ae3c5535542991a06ce9a20",
+      "question": "Radio shack made a line of computers in the 1980's which was marketed as the TRS-80 Color Computer or the Interact Home Computer?",
+      "gold": "TRS-80 Color Computer",
+      "type": "comparison",
+      "gold_titles": [
+        "Interact Home Computer",
+        "TRS-80 Color Computer"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.11320304870605469,
+        "rounds": 1,
+        "pred": "The Radio Shack TRS",
+        "gold": "TRS-80 Color Computer"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 2.1244945526123047,
+        "rounds": 1,
+        "pred": "The Radio Shack TRS",
+        "gold": "TRS-80 Color Computer"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 2.1193645000457764,
+        "rounds": 1,
+        "pred": "The Radio Shack TRS",
+        "gold": "TRS-80 Color Computer",
+        "query_variants": [
+          "Radio shack made a line of computers in the 1980's which was marketed as the TRS-80 Color Computer or the Interact Home Computer?"
+        ]
+      }
+    },
+    {
+      "id": "5ab4313a554299233955004c",
+      "question": "Ælfgifu of Exeter and Ælfgifu of Shaftesbury are both known for being what?",
+      "gold": "saint",
+      "type": "bridge",
+      "gold_titles": [
+        "Ælfgifu of Exeter",
+        "Ælfgifu of Shaftesbury"
+      ],
+      "naive": {
+        "em": 1.0,
+        "f1": 1.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.05592012405395508,
+        "rounds": 1,
+        "pred": "Saint",
+        "gold": "saint"
+      },
+      "hybrid": {
+        "em": 1.0,
+        "f1": 1.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.9398882389068604,
+        "rounds": 1,
+        "pred": "Saint",
+        "gold": "saint"
+      },
+      "agentic": {
+        "em": 1.0,
+        "f1": 1.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.830852746963501,
+        "rounds": 1,
+        "pred": "Saint",
+        "gold": "saint",
+        "query_variants": [
+          "Ælfgifu of Exeter and Ælfgifu of Shaftesbury are both known for being what?"
+        ]
+      }
+    },
+    {
+      "id": "5adfc8cf554299603e4183ad",
+      "question": "Which driver has been in less races, Marlon Stöckinger or MatthieuVaxivière?   ",
+      "gold": "Marlon Stöckinger",
+      "type": "bridge",
+      "gold_titles": [
+        "Marlon Stöckinger",
+        "Matthieu Vaxivière"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.4,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.5,
+        "latency": 0.0489344596862793,
+        "rounds": 1,
+        "pred": "Marlon Alexander St",
+        "gold": "Marlon Stöckinger"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.4,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.8497824668884277,
+        "rounds": 1,
+        "pred": "Marlon Alexander St",
+        "gold": "Marlon Stöckinger"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.4,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.8656847476959229,
+        "rounds": 1,
+        "pred": "Marlon Alexander St",
+        "gold": "Marlon Stöckinger",
+        "query_variants": [
+          "Which driver has been in less races, Marlon Stöckinger or MatthieuVaxivière?   "
+        ]
+      }
+    },
+    {
+      "id": "5ab2e3c45542991669774126",
+      "question": "Are Centaurium and Dacrydium both genuses of plant species?",
+      "gold": "yes",
+      "type": "comparison",
+      "gold_titles": [
+        "Centaurium",
+        "Dacrydium"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.04277396202087402,
+        "rounds": 1,
+        "pred": "",
+        "gold": "yes"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.3511219024658203,
+        "rounds": 1,
+        "pred": "Podocarpaceae",
+        "gold": "yes"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 1.366565465927124,
+        "rounds": 1,
+        "pred": "Podocarpaceae",
+        "gold": "yes",
+        "query_variants": [
+          "Are Centaurium and Dacrydium both genuses of plant species?"
+        ]
+      }
+    }
+  ],
+  "trajectory_examples": [
+    {
+      "question": "Who was the probably maternal grandfather of Edmund II?",
+      "gold": "Thored",
+      "pred": "Edmund Maurice Burke Roche",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'. Initial hybrid retrieval.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Maurice Roche, 4th Baron Fermoy'"
+        },
+        {
+          "thought": "multi-hop: extracted bridge entity, building next-hop query.",
+          "action": "decompose -> search('Edmund Maurice Burke Roche...')",
+          "observation": "round2: merged to 10 docs, top='Maurice Roche, 4th Baron Fermoy'"
+        },
+        {
+          "thought": "confidence=0.80 >= 0.45, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "Victor Varnada directed Twisted Fortune, which starred which brother of Eddie Murphy?",
+      "gold": "Charlie Murphy",
+      "pred": "Coming",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'. Initial hybrid retrieval.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Twisted Fortune'"
+        },
+        {
+          "thought": "multi-hop: extracted bridge entity, building next-hop query.",
+          "action": "decompose -> search('Coming director...')",
+          "observation": "round2: merged to 10 docs, top='Twisted Fortune'"
+        },
+        {
+          "thought": "confidence=0.76 >= 0.45, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "This singer of A Rather Blustery Day also voiced what hedgehog?",
+      "gold": "Sonic",
+      "pred": "Rather Blustery Day",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'. Initial hybrid retrieval.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='A Rather Blustery Day'"
+        },
+        {
+          "thought": "multi-hop: extracted bridge entity, building next-hop query.",
+          "action": "decompose -> search('Walt Disney singer...')",
+          "observation": "round2: merged to 10 docs, top='A Rather Blustery Day'"
+        },
+        {
+          "thought": "confidence=0.70 >= 0.45, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "The Lisbon Traviata revolves around fans of the soprano who was of what nationality?",
+      "gold": "Greek-American",
+      "pred": "Greek-American",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'multihop'. Initial hybrid retrieval.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='The Lisbon Traviata'"
+        },
+        {
+          "thought": "multi-hop: extracted bridge entity, building next-hop query.",
+          "action": "decompose -> search('Maria Callas...')",
+          "observation": "round2: merged to 10 docs, top='Maria Callas'"
+        },
+        {
+          "thought": "confidence=0.91 >= 0.45, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "The Story of Them Featuring Van Morrison is a compilation album recorded by what Northern Irish band formed in Belfast in April 1964?",
+      "gold": "Them",
+      "pred": "The Story",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'. Initial hybrid retrieval.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='The Story of Them Featuring Van Morrison'"
+        },
+        {
+          "thought": "multi-hop: extracted bridge entity, building next-hop query.",
+          "action": "decompose -> search('Gloria...')",
+          "observation": "round2: merged to 10 docs, top='Gloria Burgle'"
+        },
+        {
+          "thought": "confidence=0.93 >= 0.45, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "In what region of Argentina is the city of Gualeguaychu located? ",
+      "gold": "Mesopotamia",
+      "pred": "Valle",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'multihop'. Initial hybrid retrieval.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Gualeguaychú, Entre Ríos'"
+        },
+        {
+          "thought": "multi-hop: extracted bridge entity, building next-hop query.",
+          "action": "decompose -> search('Valle born location...')",
+          "observation": "round2: merged to 10 docs, top='Gualeguaychú, Entre Ríos'"
+        },
+        {
+          "thought": "confidence=0.80 >= 0.45, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "What does the unique calendar system in Japan, who the first Emperor of Japan created, emphasize?",
+      "gold": "the long history of Japan",
+      "pred": "The Japanese",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'. Initial hybrid retrieval.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Japanese imperial year'"
+        },
+        {
+          "thought": "multi-hop: extracted bridge entity, building next-hop query.",
+          "action": "decompose -> search('The Japanese...')",
+          "observation": "round2: merged to 10 docs, top='Japanese imperial year'"
+        },
+        {
+          "thought": "confidence=0.91 >= 0.45, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "Sian Gibson co-wrote which British sitcom, set around a supermarket and car share scheme?",
+      "gold": "Peter Kay's Car Share",
+      "pred": "Peter Kay",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'. Initial hybrid retrieval.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Peter Kay's Car Share'"
+        },
+        {
+          "thought": "multi-hop: extracted bridge entity, building next-hop query.",
+          "action": "decompose -> search('Peter Kay author...')",
+          "observation": "round2: merged to 10 docs, top='Peter Kay's Car Share'"
+        },
+        {
+          "thought": "confidence=1.03 >= 0.45, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    }
+  ]
+}

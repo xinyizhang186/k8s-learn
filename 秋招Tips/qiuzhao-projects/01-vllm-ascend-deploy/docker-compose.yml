@@ -1,0 +1,63 @@
+version: "3.8"
+
+# docker-compose 启动 vllm_ascend 服务
+# 用法：docker-compose up -d
+
+services:
+  vllm-ascend:
+    image: quay.io/ascend/vllm-ascend:v0.23.0
+    container_name: vllm-ascend
+    # 关键：必须挂载 NPU 设备 + 共享内存
+    devices:
+      - /dev/davinci0
+      - /dev/davinci1
+      - /dev/davinci2
+      - /dev/davinci3
+      - /dev/davinci_manager
+      - /dev/devmm_svm
+      - /dev/hisi_hdc
+    # 共享内存（HCCL 通信必需，默认 64MB 不够）
+    shm_size: 16g
+    # 资源限制
+    mem_limit: 64g
+    # 网络：host 模式便于 NPU 间通信
+    network_mode: host
+    # 环境变量
+    environment:
+      - ASCEND_RT_VISIBLE_DEVICES=0,1,2,3
+      - TASK_QUEUE_ENABLE=1
+      - PYTORCH_NPU_ALLOC_CONF=expandable_segments:True
+      - HCCL_OP_EXPANSION_MODE=AIV
+      - VLLM_USE_MODELSCOPE=True
+      - LD_LIBRARY_PATH=/usr/local/Ascend/ascend-toolkit/latest/lib64
+    # 挂载
+    volumes:
+      - /usr/local/Ascend/driver:/usr/local/Ascend/driver
+      - /usr/local/Ascend/add-ons:/usr/local/Ascend/add-ons
+      - /usr/local/dcmi:/usr/local/dcmi
+      - /usr/local/bin/npu-smi:/usr/local/bin/npu-smi
+      - ./models:/models
+      - ./logs:/workspace/logs
+    # 启动命令：4 卡 TP 部署 Qwen3-7B
+    command: >
+      serve /models/Qwen3-7B
+      --served-model-name qwen3
+      --trust-remote-code
+      --distributed-executor-backend mp
+      --tensor-parallel-size 4
+      --max-model-len 5500
+      --max-num-batched-tokens 40960
+      --no-enable-prefix-caching
+      --async-scheduling
+      --quantization ascend
+      --compilation-config {"cudagraph_mode":"FULL_DECODE_ONLY"}
+      --block-size 128
+      --gpu-memory-utilization 0.9
+      --port 8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 3

@@ -1,0 +1,29 @@
+# =============================================================================
+# 01 — ConfigMap：非敏感配置的存储与注入
+# -----------------------------------------------------------------------------
+# ConfigMap 保存键值对配置，可通过 envFrom / valueFrom / volume 三种方式注入 Pod。
+# 下方演示：envFrom 整体注入 + volume 挂载为文件两种方式。
+# 命令: kubectl -n learn-space get cm
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config
+  namespace: learn-space
+data:
+  # 这些键会通过 envFrom 注入为环境变量
+  TITLE: "K8s 访客计数器 (学习项目)"
+  THEME: "dark"
+  PORT: "8080"
+  REDIS_URL: "redis://redis:6379"
+---
+# 以文件形式挂载的配置（演示 volume 挂载 ConfigMap）
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config-files
+  namespace: learn-space
+data:
+  greeting.txt: |
+    你好！这个文件由 ConfigMap 以 volume 方式挂载进 Pod。
+    修改 ConfigMap 后，Pod 内文件会随之更新（约 60s 生效或重启容器）。

@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# 工具工件
+.codegraph/
+.omo/
+
+# 生成文件
+data/feature-change-audit*.json
+output/

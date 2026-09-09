@@ -1,0 +1,60 @@
+{
+  "version_analysis": [
+    {
+      "catalog_id": "release-blog:1.36:feature:example",
+      "version": "1.36",
+      "category": "关键特性",
+      "feature_name": "MutatingAdmissionPolicy",
+      "name_source": "official_release_blog",
+      "primary_source": "https://kubernetes.io/blog/2026/04/22/kubernetes-v1-36-release/",
+      "supplemental_sources": [
+        {
+          "url": "https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/",
+          "supports": ["enhancement", "value_analysis"],
+          "reason": "正式发行博客未完整展开策略绑定、匹配和失败处理边界"
+        }
+      ],
+      "category_group": "孵化成熟特性:1.36",
+      "current_problem": "传统 mutating admission webhook 需要独立部署服务、证书、网络连通和高可用设施，请求链路还会引入额外延迟与外部故障点；当 webhook 超时或证书异常时，资源创建可能被阻断，平台团队还需维护独立的发布、监控和回退流程。",
+      "enhancement": "v1.36 将 MutatingAdmissionPolicy 提升为 GA，API Server 可直接执行基于 CEL 的声明式变更策略，并通过独立的 MutatingAdmissionPolicyBinding 控制策略作用范围。该能力减少网络调用，但不替代所有复杂 webhook；采用前仍需验证匹配条件、表达式、failurePolicy、参数资源和策略冲突顺序。",
+      "feature_summary": "API Server 可直接执行基于 CEL 的声明式变更策略，策略与绑定资源分离，减少对外部 mutating webhook 服务的依赖。",
+      "value_domain": "稳定性、运维效率",
+      "value_analysis": "适合希望降低 webhook 网络依赖和运维复杂度的集群；迁移前仍需验证表达式、匹配条件和失败策略。",
+      "sources": [
+        "https://kubernetes.io/blog/2026/04/22/kubernetes-v1-36-release/",
+        "https://kubernetes.io/docs/reference/access-authn-authz/mutating-admission-policy/"
+      ],
+      "status": "ready"
+    }
+  ],
+  "feature_changes": [
+    {
+      "id": "1.35-to-1.36:ExampleGate",
+      "compatibility": false,
+      "compatibility_analysis": "",
+      "conclusion": "保持目标版本默认值，在测试集群验证相关 API 行为和回退开关后再分批升级。",
+      "check_method": "检查各组件启动参数和 ComponentConfig 中的 FeatureGate 设置，对照默认值变化并验证相关 API 行为。",
+      "sources": [
+        "https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/"
+      ],
+      "details": "机器事实由固定 tag 源码差异生成；目标版本的默认值变化会影响未显式配置门控的集群，因此需要结合该特性的 API、控制器或节点机制解释行为变化，并验证实际使用路径。",
+      "recommendation": "开启",
+      "notes": "显式旧值仅用于短期回退，验证完成后应恢复目标版本默认行为。",
+      "status": "ready"
+    },
+    {
+      "id": "1.35-to-1.36:CompatibleGate",
+      "compatibility": true,
+      "compatibility_analysis": "特性默认关闭，无影响",
+      "conclusion": "",
+      "check_method": "",
+      "sources": [
+        "https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/"
+      ],
+      "details": "",
+      "recommendation": "",
+      "notes": "",
+      "status": "ready"
+    }
+  ]
+}

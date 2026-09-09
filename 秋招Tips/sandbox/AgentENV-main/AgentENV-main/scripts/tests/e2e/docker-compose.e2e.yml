@@ -1,0 +1,8 @@
+services:
+  agentenv-a:
+    ports:
+      - "8001:8000"
+
+  agentenv-b:
+    ports:
+      - "8002:8000"

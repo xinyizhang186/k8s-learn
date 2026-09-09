@@ -1,0 +1,14 @@
+{
+  "name": "k8s-learn-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "K8s 入门学习项目 — 访客计数器微服务 (零依赖)",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

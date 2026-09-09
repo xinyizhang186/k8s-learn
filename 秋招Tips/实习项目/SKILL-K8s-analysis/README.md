@@ -1,0 +1,152 @@
+# AutoK8s
+
+Kubernetes 版本分析与特性变更统一工具。单一入口 `generate.py` 根据参数自适应选择分析模式，生成双 Sheet xlsx 报告；再按 `Prompt.md` 四阶段流水线对文本列做联网优化。
+
+---
+
+## 1. 快速开始
+
+```bash
+pip install -r requirements.txt
+```
+
+### 1.1 版本分析（博客 URL → 版本分析 xlsx）
+
+```bash
+python3 generate.py --blog https://kubernetes.io/blog/2026/04/22/kubernetes-v1-36-release/
+```
+
+多版本合并：
+
+```bash
+python3 generate.py \
+  --blog https://kubernetes.io/blog/2025/08/27/kubernetes-v1-34-release/ \
+         https://kubernetes.io/blog/2025/12/17/kubernetes-v1-35-release/ \
+         https://kubernetes.io/blog/2026/04/22/kubernetes-v1-36-release/
+```
+
+### 1.2 特性变更（kube_features.go → 特性变更 xlsx）
+
+```bash
+python3 generate.py --go-file data/v1.36.0kube_features.go --range 1.35 1.36
+```
+
+离线模式（仅用 `data/` 缓存，不联网）：
+
+```bash
+python3 generate.py --go-file data/v1.37.0-beta.0-kube_features.go --range 1.37 1.37 --offline
+```
+
+可选核查报告（`--audit` 写出逐条核查 JSON）：
+
+```bash
+python3 generate.py --go-file data/v1.37.0-beta.0-kube_features.go --range 1.37 1.37 \
+  --offline --audit output/v1.37/custom-audit.json
+```
+
+### 1.3 双 Sheet 合并（博客 + go 文件 → 版本分析 + 特性变更）
+
+```bash
+python3 generate.py \
+  --blog https://kubernetes.io/blog/2025/04/23/kubernetes-v1-33-release/ \
+         https://kubernetes.io/blog/2025/08/27/kubernetes-v1-34-release/ \
+         https://kubernetes.io/blog/2025/12/17/kubernetes-v1-35-release/ \
+         https://kubernetes.io/blog/2026/04/22/kubernetes-v1-36-release/ \
+  --go-file data/v1.36.0kube_features.go --range 1.33 1.36 \
+  --output output/v1.33-v1.36/k8sv1.33-v1.36.xlsx
+```
+
+> 默认输出路径 `output/v{版本}/`，用 `--output` 可自定义。
+
+### 1.4 文本质量优化（按 `Prompt.md` 四阶段流水线）
+
+`generate.py` 生成的是**初步 xlsx**：机器列（特性名/阶段/默认值/兼容性）准确，但文本列（特性功能介绍/价值分析/排查方法/详细说明）走正则+机翻回退，存在机翻错字、KEP 配错、PR 模板噪声等问题。
+
+按 `Prompt.md` 四阶段流水线优化文本列：
+
+| 阶段 | 动作 |
+|------|------|
+| **A 提取** | 从初步 xlsx 抽出需优化的行 + 机器上下文 |
+| **B 取证** | `websearch` 语义搜索 + `webfetch` 抓 KEP README，采集可引用证据 |
+| **C 生成** | 基于证据按字段规范生成中文文本 |
+| **D 校验** | 六项硬约束校验 + 写回 xlsx（保留机器列，仅替换文本列） |
+
+优化后文件命名为 `*_optimized.xlsx`。已校准范围（如 v1.35-v1.36）可对齐参考文件 `AI_agent/k8sv1.35-v1.36.xlsx` 中的人工复核文本。
+
+---
+
+## 2. 自适应接口
+
+| 传入参数 | 运行模式 | 输出 |
+|----------|----------|------|
+| `--blog URL` | 版本分析 | 单 Sheet "版本分析" xlsx |
+| `--go-file PATH --range LO HI` | 特性变更 | 单 Sheet "特性变更" xlsx |
+| 两者都给 | 双 Sheet 合并 | 版本分析 + 特性变更 双 Sheet xlsx |
+| 都不给 | 报错 | — |
+
+---
+
+## 3. 目录结构
+
+```
+AutoK8s-analysis/
+├── generate.py                  # 统一 CLI 入口 (→ autok8s.cli)
+├── requirements.txt             # 依赖: openpyxl>=3.1
+├── README.md                    # 项目说明
+├── logic.md                     # 核心逻辑详解
+├── logic.tex                    # 核心逻辑 (Beamer Metropolis LaTeX)
+├── Prompt.md                    # 文本优化四阶段流水线复现配方
+├── autok8s/                     # 统一 Python 包
+│   ├── cli.py                   # 自适应入口
+│   ├── workbook.py              # 双 Sheet 合并 (保留富文本)
+│   ├── common/                  # 共享工具 (HTTP/翻译/质量门/日志)
+│   ├── version_analysis/        # 版本分析 (博客抓取 → 正则/机翻 → xlsx)
+│   └── feature_changes/         # 特性变更 (go 解析 → KEP 抓取 → xlsx)
+├── AI_agent/                    # 参考文件 (人工复核准确文本，校准用)
+│   └── k8sv1.35-v1.36.xlsx
+├── data/                        # 输入 kube_features.go + CHANGELOG + 缓存
+└── output/                      # 生成的 xlsx (按版本子目录)
+```
+
+---
+
+## 4. 两个分析模块
+
+### 4.1 版本分析 (`autok8s.version_analysis`)
+
+- **输入**: Kubernetes 发布博客 URL（支持多版本）
+- **输出**: "版本分析" sheet，含关键特性价值分析 + 关键变更风险分析
+- **工作流**: 抓取博客 → 提取特性/弃用 → 正则+机翻生成 → 质量门校验 → xlsx 写出
+- **富文本**: "特性功能介绍"列中"现状："与"本特性增强："标签自动加粗
+
+### 4.2 特性变更 (`autok8s.feature_changes`)
+
+- **输入**: `kube_features.go` + 版本范围
+- **输出**: "特性变更" sheet，14 列
+- **工作流**: 解析 go 文件 → 推导变更类型/阶段/默认值 → 三级取证（pkg.go.dev → KEP → CHANGELOG）→ 翻译为中文 → xlsx 写出
+- **核查留痕**: `--audit` 写出逐条核查 JSON，确保"详细说明"必有资料链接、每个不兼容条目都有排查方法
+- **版本支持**: 支持任意未来 k8s 版本，无需手动维护知识库
+
+---
+
+## 5. 机器列与文本列
+
+autok8s 生成的 xlsx 中，列分两类：
+
+| 类别 | 列 | 来源 | 准确度 |
+|------|----|------|--------|
+| **机器列** | 分类/特性名称/特性价值领域/变更类型/特性阶段变化/默认值变化/默认值锁定/是否兼容/兼容分析/建议开启 | 代码解析博客 HTML 或 kube_features.go | 100% 准确 |
+| **文本列** | 特性功能介绍/特性功能价值分析/风险详细描述/排查方法/参考资料/详细说明/补充说明 | 正则+机翻回退 | 不准（需 Prompt.md 优化） |
+
+`Prompt.md` 流水线**只替换文本列**，机器列原样保留。
+
+---
+
+## 6. 质量门校验
+
+所有生成路径均必须通过 `common/quality.py` 校验，未通过则读者字段留空，不可信内容不进入 xlsx：
+
+- **痛点校验**：≥ 14 字，含问题词（无法/难以/缺乏/不一致/风险/限制/依赖/失败/不足），非模板前缀
+- **增强句校验**：≥ 20 字，不含多余历史陈述，非泛化表述
+- **价值分析校验**：≥ 14 字，含收益词，非功能描述/痛点陈述/背景历史
+- **中文占比**：三段拼接后 ≥ 20%

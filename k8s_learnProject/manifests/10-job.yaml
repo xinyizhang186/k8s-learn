@@ -1,0 +1,35 @@
+# =============================================================================
+# 10 — Job：一次性任务，运行到完成
+# -----------------------------------------------------------------------------
+# Job 创建一个或多个 Pod，保证指定数量的 Pod 成功完成后结束。
+# 适合批处理、数据初始化、数据迁移等。
+# 这里用一个 Job 初始化 Redis 计数器（设为 0 并写入一条欢迎信息）。
+# 命令: kubectl -n learn-space get job
+#       kubectl -n learn-space logs job/init-counter
+# =============================================================================
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: init-counter
+  namespace: learn-space
+spec:
+  completions: 1 # 需要成功完成 1 次
+  parallelism: 1 # 并发数
+  backoffLimit: 3 # 失败重试上限
+  activeDeadlineSeconds: 60 # 最长运行时间
+  ttlSecondsAfterFinished: 600 # 完成后保留 10 分钟便于查看日志
+  template:
+    spec:
+      restartPolicy: OnFailure # Job 只支持 OnFailure / Never
+      containers:
+        - name: init
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              echo "[job] 初始化 Redis 计数器..."
+              redis-cli -h redis set visits 0
+              redis-cli -h redis set welcome "K8s 学习项目已就绪 by Job"
+              echo "[job] 当前 visits=$(redis-cli -h redis get visits)"
+              echo "[job] 初始化完成"

@@ -1,0 +1,29 @@
+{
+  "model": "Qwen3-7B",
+  "served_model_name": "qwen3",
+  "trust_remote_code": true,
+  "distributed_executor_backend": "mp",
+  "tensor_parallel_size": 4,
+  "max_model_len": 5500,
+  "max_num_batched_tokens": 40960,
+  "max_num_seqs": 128,
+  "block_size": 128,
+  "gpu_memory_utilization": 0.9,
+  "enable_prefix_caching": false,
+  "enable_chunked_prefill": true,
+  "async_scheduling": true,
+  "quantization": "ascend",
+  "compilation_config": {
+    "cudagraph_mode": "FULL_DECODE_ONLY"
+  },
+  "environment": {
+    "ASCEND_RT_VISIBLE_DEVICES": "0,1,2,3",
+    "TASK_QUEUE_ENABLE": "1",
+    "PYTORCH_NPU_ALLOC_CONF": "expandable_segments:True",
+    "HCCL_OP_EXPANSION_MODE": "AIV",
+    "HCCL_BUFFSIZE": "200",
+    "VLLM_USE_MODELSCOPE": "True",
+    "VLLM_ASCEND_ENABLE_FUSED_MC2": "0",
+    "VLLM_ASCEND_ENABLE_MLAPO": "1"
+  }
+}

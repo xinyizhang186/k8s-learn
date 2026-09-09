@@ -1,0 +1,68 @@
+# =============================================================================
+# 04 — StatefulSet：有状态应用部署（Redis）
+# -----------------------------------------------------------------------------
+# StatefulSet 保证：稳定的网络标识 (redis-0)、稳定的持久存储、有序启停。
+# 与 Deployment 的核心区别：
+#   - Pod 名固定且有序 (redis-0, redis-1...)，重启后名字不变
+#   - 每个 Pod 绑定独立 PVC，数据不混淆
+#   - 适合数据库、消息队列等有状态服务
+# 本例用单副本 Redis 作为共享计数后端，配合 Service 提供稳定 DNS 名 redis。
+# 命令: kubectl -n learn-space get sts,pod,pvc -l app=redis
+# =============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: learn-space
+  labels:
+    app: redis
+spec:
+  serviceName: redis # 必须有同名的 Headless Service（见 06-service.yaml）
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999 # redis 镜像内置用户 uid
+        fsGroup: 999
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+          ports:
+            - containerPort: 6379
+              name: redis
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 250m, memory: 128Mi }
+          volumeMounts:
+            - name: data
+              mountPath: /data # AOF/RDB 持久化目录
+          # 存活探针：redis-cli ping 返回 PONG 即健康
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # 就绪探针：能响应才接流量
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 3
+            periodSeconds: 5
+  # volumeClaimTemplates：StatefulSet 专属，为每个 Pod 自动生成独立 PVC
+  # （这里单副本，也可直接用 03-pvc.yaml 手动创建的 PVC；下方演示模板方式）
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 256Mi

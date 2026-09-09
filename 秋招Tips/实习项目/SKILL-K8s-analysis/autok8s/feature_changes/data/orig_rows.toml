@@ -1,0 +1,35 @@
+# AutoK8s02 人工原行 — 4 条特殊特性门的排查/详说/建议 (go 文件无法在线获取的部分)。
+# 由 content_store.lookup() 加载, key 为特性门 bare name。
+# 注意: 中文 key 需用引号包裹 (tomli 对裸中文 key 解析严格)。
+
+[AllowOverwriteTerminationGracePeriodSeconds]
+"默认值锁定" = ""
+"排查方法" = "允许MaxPodGracePeriodSeconds在软驱逐中被 spec.terminationGracePeriodSeconds覆盖"
+"参考资料" = "https://kep.k8s.io/4563"
+"详细说明" = "软驱逐时 Pod 的优雅终止宽限期此前由 kubelet 的 MaxPodGracePeriodSeconds 决定，无法被 Pod spec 中更大的 terminationGracePeriodSeconds 覆盖。该特性允许在软驱逐场景中用 spec.terminationGracePeriodSeconds 覆盖 MaxPodGracePeriodSeconds，使 Pod 可获得更长的优雅终止时间。该特性已弃用。"
+"建议开启" = "关闭"
+"补充说明" = "已弃用"
+
+[AllowServiceLBStatusOnNonLB]
+"默认值锁定" = "->true"
+"排查方法" = ""
+"参考资料" = ""
+"详细说明" = ""
+"建议开启" = ""
+"补充说明" = ""
+
+[AnyVolumeDataSource]
+"默认值锁定" = "->true"
+"排查方法" = ""
+"参考资料" = ""
+"详细说明" = ""
+"建议开启" = ""
+"补充说明" = ""
+
+[AuthorizeNodeWithSelectors]
+"默认值锁定" = "->true"
+"排查方法" = "允许节点鉴权器使用细粒度选择符鉴权。需要启用AuthorizeWithSelectors。"
+"参考资料" = "https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/node/"
+"详细说明" = "节点鉴权器使用细粒度选择符鉴权（需先启用 AuthorizeWithSelectors 特性）。Kubelet 只允许读取它们自己的 Node 对象，并且只允许读取绑定到其节点的 Pod。"
+"建议开启" = "开启"
+"补充说明" = ""

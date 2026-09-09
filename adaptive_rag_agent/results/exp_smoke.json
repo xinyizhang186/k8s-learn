@@ -1,0 +1,702 @@
+{
+  "n": 10,
+  "summary": {
+    "naive": {
+      "em": 0.0,
+      "f1": 0.0333,
+      "ctx_recall": 0.8,
+      "ctx_p@2": 0.5,
+      "ctx_p@4": 0.3,
+      "latency": 0.0561,
+      "avg_rounds": 1.0
+    },
+    "hybrid": {
+      "em": 0.0,
+      "f1": 0.0333,
+      "ctx_recall": 0.9,
+      "ctx_p@2": 0.8,
+      "ctx_p@4": 0.4,
+      "latency": 7.2226,
+      "avg_rounds": 1.0
+    },
+    "agentic": {
+      "em": 0.0,
+      "f1": 0.0333,
+      "ctx_recall": 0.9,
+      "ctx_p@2": 0.8,
+      "ctx_p@4": 0.4,
+      "latency": 4.2298,
+      "avg_rounds": 1.0
+    }
+  },
+  "by_type": {
+    "naive": {
+      "bridge": {
+        "em": 0.0,
+        "f1": 0.037,
+        "ctx_recall": 0.7778,
+        "ctx_p@2": 0.5556,
+        "ctx_p@4": 0.3056,
+        "latency": 0.0567,
+        "avg_rounds": 1.0
+      },
+      "comparison": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.25,
+        "latency": 0.0513,
+        "avg_rounds": 1.0
+      }
+    },
+    "hybrid": {
+      "bridge": {
+        "em": 0.0,
+        "f1": 0.037,
+        "ctx_recall": 0.8889,
+        "ctx_p@2": 0.7778,
+        "ctx_p@4": 0.3889,
+        "latency": 7.5913,
+        "avg_rounds": 1.0
+      },
+      "comparison": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 3.9051,
+        "avg_rounds": 1.0
+      }
+    },
+    "agentic": {
+      "bridge": {
+        "em": 0.0,
+        "f1": 0.037,
+        "ctx_recall": 0.8889,
+        "ctx_p@2": 0.7778,
+        "ctx_p@4": 0.3889,
+        "latency": 4.24,
+        "avg_rounds": 1.0
+      },
+      "comparison": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 4.1379,
+        "avg_rounds": 1.0
+      }
+    }
+  },
+  "per_question": [
+    {
+      "id": "5a90cb205542995651fb51fe",
+      "question": "Who was the probably maternal grandfather of Edmund II?",
+      "gold": "Thored",
+      "type": "bridge",
+      "gold_titles": [
+        "Edmund Ironside",
+        "Ælfgifu of York"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.0,
+        "latency": 0.03931689262390137,
+        "rounds": 1,
+        "pred": "Edmund Maurice Burke Roche",
+        "gold": "Thored"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 34.44512486457825,
+        "rounds": 1,
+        "pred": "Edmund Maurice Burke Roche",
+        "gold": "Thored"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 4.455150842666626,
+        "rounds": 1,
+        "pred": "Edmund Maurice Burke Roche",
+        "gold": "Thored",
+        "query_variants": [
+          "Who was the probably maternal grandfather of Edmund II?"
+        ]
+      }
+    },
+    {
+      "id": "5ae70ed7554299572ea546a1",
+      "question": "Victor Varnada directed Twisted Fortune, which starred which brother of Eddie Murphy?",
+      "gold": "Charlie Murphy",
+      "type": "bridge",
+      "gold_titles": [
+        "Charlie Murphy",
+        "Twisted Fortune"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.04966378211975098,
+        "rounds": 1,
+        "pred": "Coming",
+        "gold": "Charlie Murphy"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 4.849446773529053,
+        "rounds": 1,
+        "pred": "Vernon Lynch",
+        "gold": "Charlie Murphy"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 4.756822824478149,
+        "rounds": 1,
+        "pred": "Vernon Lynch",
+        "gold": "Charlie Murphy",
+        "query_variants": [
+          "Victor Varnada directed Twisted Fortune, which starred which brother of Eddie Murphy?"
+        ]
+      }
+    },
+    {
+      "id": "5ae6050f55429929b0807a5e",
+      "question": "This singer of A Rather Blustery Day also voiced what hedgehog?",
+      "gold": "Sonic",
+      "type": "bridge",
+      "gold_titles": [
+        "A Rather Blustery Day",
+        "Jim Cummings"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.0440678596496582,
+        "rounds": 1,
+        "pred": "Walt Disney",
+        "gold": "Sonic"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 4.256961822509766,
+        "rounds": 1,
+        "pred": "Walt Disney",
+        "gold": "Sonic"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 4.024386882781982,
+        "rounds": 1,
+        "pred": "Walt Disney",
+        "gold": "Sonic",
+        "query_variants": [
+          "This singer of A Rather Blustery Day also voiced what hedgehog?"
+        ]
+      }
+    },
+    {
+      "id": "5abc5603554299700f9d7875",
+      "question": "The Lisbon Traviata revolves around fans of the soprano who was of what nationality?",
+      "gold": "Greek-American",
+      "type": "bridge",
+      "gold_titles": [
+        "Maria Callas",
+        "The Lisbon Traviata"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.0671379566192627,
+        "rounds": 1,
+        "pred": "Maria Callas",
+        "gold": "Greek-American"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 4.7005228996276855,
+        "rounds": 1,
+        "pred": "Maria Callas",
+        "gold": "Greek-American"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 4.744051933288574,
+        "rounds": 1,
+        "pred": "Maria Callas",
+        "gold": "Greek-American",
+        "query_variants": [
+          "The Lisbon Traviata revolves around fans of the soprano who was of what nationality?"
+        ]
+      }
+    },
+    {
+      "id": "5a7d2afb554299452d57bb41",
+      "question": "The Story of Them Featuring Van Morrison is a compilation album recorded by what Northern Irish band formed in Belfast in April 1964?",
+      "gold": "Them",
+      "type": "bridge",
+      "gold_titles": [
+        "The Story of Them Featuring Van Morrison",
+        "Them (band)"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.09372830390930176,
+        "rounds": 1,
+        "pred": "",
+        "gold": "Them"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 5.0560853481292725,
+        "rounds": 1,
+        "pred": "",
+        "gold": "Them"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 4.825254917144775,
+        "rounds": 1,
+        "pred": "",
+        "gold": "Them",
+        "query_variants": [
+          "The Story of Them Featuring Van Morrison is a compilation album recorded by what Northern Irish band formed in Belfast in April 1964?"
+        ]
+      }
+    },
+    {
+      "id": "5ae17f1e5542990adbacf7a6",
+      "question": "In what region of Argentina is the city of Gualeguaychu located? ",
+      "gold": "Mesopotamia",
+      "type": "bridge",
+      "gold_titles": [
+        "Entre Ríos Province",
+        "Gualeguaychú, Entre Ríos"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.0,
+        "latency": 0.05709075927734375,
+        "rounds": 1,
+        "pred": "Valle",
+        "gold": "Mesopotamia"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 3.393744468688965,
+        "rounds": 1,
+        "pred": "Valle",
+        "gold": "Mesopotamia"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 3.435675621032715,
+        "rounds": 1,
+        "pred": "Valle",
+        "gold": "Mesopotamia",
+        "query_variants": [
+          "In what region of Argentina is the city of Gualeguaychu located? "
+        ]
+      }
+    },
+    {
+      "id": "5a78e86f55429974737f78fb",
+      "question": "What does the unique calendar system in Japan, who the first Emperor of Japan created, emphasize?",
+      "gold": "the long history of Japan",
+      "type": "bridge",
+      "gold_titles": [
+        "Emperor Jimmu",
+        "Japanese imperial year"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.5,
+        "latency": 0.06981015205383301,
+        "rounds": 1,
+        "pred": "The Japanese",
+        "gold": "the long history of Japan"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 4.140150308609009,
+        "rounds": 1,
+        "pred": "The Japanese",
+        "gold": "the long history of Japan"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 4.283806562423706,
+        "rounds": 1,
+        "pred": "The Japanese",
+        "gold": "the long history of Japan",
+        "query_variants": [
+          "What does the unique calendar system in Japan, who the first Emperor of Japan created, emphasize?"
+        ]
+      }
+    },
+    {
+      "id": "5a8f08c2554299458435d530",
+      "question": "Sian Gibson co-wrote which British sitcom, set around a supermarket and car share scheme?",
+      "gold": "Peter Kay's Car Share",
+      "type": "bridge",
+      "gold_titles": [
+        "Peter Kay's Car Share",
+        "Sian Gibson"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.3333333333333333,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 0.05044150352478027,
+        "rounds": 1,
+        "pred": "Peter Kay",
+        "gold": "Peter Kay's Car Share"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.3333333333333333,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 3.9856655597686768,
+        "rounds": 1,
+        "pred": "Peter Kay",
+        "gold": "Peter Kay's Car Share"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.3333333333333333,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 3.9197394847869873,
+        "rounds": 1,
+        "pred": "Peter Kay",
+        "gold": "Peter Kay's Car Share",
+        "query_variants": [
+          "Sian Gibson co-wrote which British sitcom, set around a supermarket and car share scheme?"
+        ]
+      }
+    },
+    {
+      "id": "5ab2ac3d55429929539467ce",
+      "question": "Be Quick '28  football club is locayed in what province?",
+      "gold": "Overijssel",
+      "type": "bridge",
+      "gold_titles": [
+        "Be Quick '28",
+        "Zwolle"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 0.03874945640563965,
+        "rounds": 1,
+        "pred": "Zwolle",
+        "gold": "Overijssel"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 3.4935803413391113,
+        "rounds": 1,
+        "pred": "Zwolle",
+        "gold": "Overijssel"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 0.5,
+        "ctx_p@2": 0.5,
+        "ctx_p@4": 0.25,
+        "latency": 3.7150392532348633,
+        "rounds": 1,
+        "pred": "Zwolle",
+        "gold": "Overijssel",
+        "query_variants": [
+          "Be Quick '28  football club is locayed in what province?"
+        ]
+      }
+    },
+    {
+      "id": "5a7df7115542990b8f503b0f",
+      "question": "Who was born first out of Todd Field and Aaron Katz?",
+      "gold": "William Todd Field",
+      "type": "comparison",
+      "gold_titles": [
+        "Aaron Katz (filmmaker)",
+        "Todd Field"
+      ],
+      "naive": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 0.0,
+        "ctx_p@4": 0.25,
+        "latency": 0.05129265785217285,
+        "rounds": 1,
+        "pred": "Dance Party USA",
+        "gold": "William Todd Field"
+      },
+      "hybrid": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 3.9051361083984375,
+        "rounds": 1,
+        "pred": "October",
+        "gold": "William Todd Field"
+      },
+      "agentic": {
+        "em": 0.0,
+        "f1": 0.0,
+        "ctx_recall": 1.0,
+        "ctx_p@2": 1.0,
+        "ctx_p@4": 0.5,
+        "latency": 4.1378889083862305,
+        "rounds": 1,
+        "pred": "October",
+        "gold": "William Todd Field",
+        "query_variants": [
+          "Who was born first out of Todd Field and Aaron Katz?"
+        ]
+      }
+    }
+  ],
+  "trajectory_examples": [
+    {
+      "question": "Who was the probably maternal grandfather of Edmund II?",
+      "gold": "Thored",
+      "pred": "Edmund Maurice Burke Roche",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Maurice Roche, 4th Baron Fermoy'"
+        },
+        {
+          "thought": "confidence=0.80 >= 0.55, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "Victor Varnada directed Twisted Fortune, which starred which brother of Eddie Murphy?",
+      "gold": "Charlie Murphy",
+      "pred": "Vernon Lynch",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Twisted Fortune'"
+        },
+        {
+          "thought": "confidence=0.76 >= 0.55, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "This singer of A Rather Blustery Day also voiced what hedgehog?",
+      "gold": "Sonic",
+      "pred": "Walt Disney",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='A Rather Blustery Day'"
+        },
+        {
+          "thought": "confidence=0.77 >= 0.55, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "The Lisbon Traviata revolves around fans of the soprano who was of what nationality?",
+      "gold": "Greek-American",
+      "pred": "Maria Callas",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'multihop'.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='The Lisbon Traviata'"
+        },
+        {
+          "thought": "confidence=0.91 >= 0.55, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "The Story of Them Featuring Van Morrison is a compilation album recorded by what Northern Irish band formed in Belfast in April 1964?",
+      "gold": "Them",
+      "pred": "",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='The Story of Them Featuring Van Morrison'"
+        },
+        {
+          "thought": "confidence=0.93 >= 0.55, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "In what region of Argentina is the city of Gualeguaychu located? ",
+      "gold": "Mesopotamia",
+      "pred": "Valle",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'multihop'.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Gualeguaychú, Entre Ríos'"
+        },
+        {
+          "thought": "confidence=1.00 >= 0.55, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "What does the unique calendar system in Japan, who the first Emperor of Japan created, emphasize?",
+      "gold": "the long history of Japan",
+      "pred": "The Japanese",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Japanese imperial year'"
+        },
+        {
+          "thought": "confidence=0.91 >= 0.55, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    },
+    {
+      "question": "Sian Gibson co-wrote which British sitcom, set around a supermarket and car share scheme?",
+      "gold": "Peter Kay's Car Share",
+      "pred": "Peter Kay",
+      "type": "bridge",
+      "trajectory": [
+        {
+          "thought": "Router classified question as 'bridge'.",
+          "action": "search(rerank=True)",
+          "observation": "round1: 10 docs, top='Peter Kay's Car Share'"
+        },
+        {
+          "thought": "confidence=1.03 >= 0.55, no conflict.",
+          "action": "stop",
+          "observation": "evidence sufficient; proceed to extract."
+        }
+      ]
+    }
+  ]
+}

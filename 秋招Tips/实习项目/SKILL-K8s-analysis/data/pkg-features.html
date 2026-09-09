@@ -1,0 +1,2448 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-layout="responsive" data-local="">
+  <head>
+    
+    <script>
+      window.addEventListener('error', window.__err=function f(e){f.p=f.p||[];f.p.push(e)});
+    </script>
+    <script>
+      (function() {
+        const theme = document.cookie.match(/prefers-color-scheme=(light|dark|auto)/)?.[1]
+        if (theme) {
+          document.querySelector('html').setAttribute('data-theme', theme);
+        }
+      }())
+    </script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    
+    <meta class="js-gtmID" data-gtmid="GTM-W8MVQXG">
+    <link rel="shortcut icon" href="/static/shared/icon/favicon.ico">
+    
+  
+    <link rel="canonical" href="https://pkg.go.dev/k8s.io/kubernetes/pkg/features">
+  
+
+    <link href="/static/frontend/frontend.min.css?version=prod-frontend-00234-g7v" rel="stylesheet">
+    
+    <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="Go Packages">
+    
+    
+  <title>features package - k8s.io/kubernetes/pkg/features - Go Packages</title>
+
+    
+  <link href="/static/frontend/unit/unit.min.css?version=prod-frontend-00234-g7v" rel="stylesheet">
+  
+  <link href="/static/frontend/unit/main/main.min.css?version=prod-frontend-00234-g7v" rel="stylesheet">
+
+
+  </head>
+  <body>
+    
+    <script>
+      function loadScript(src, mod = true) {
+        let s = document.createElement('script');
+        s.src = src;
+        if (mod) {
+          s.type = 'module';
+          s.async = true;
+          s.defer = true
+        }
+        document.head.appendChild(s);
+      }
+      loadScript("/third_party/dialog-polyfill/dialog-polyfill.js", false)
+      loadScript("/static/frontend/frontend.js");
+    </script>
+    
+  <header class="go-Header go-Header--full js-siteHeader">
+    <div class="go-Header-inner go-Header-inner--dark">
+      <nav class="go-Header-nav">
+        <a href="https://go.dev/" class="js-headerLogo" data-gtmc="nav link"
+            data-test-id="go-header-logo-link" role="heading" aria-level="1">
+          <img class="go-Header-logo" src="/static/shared/logo/go-white.svg" alt="Go">
+        </a>
+         <div class="skip-navigation-wrapper">
+            <a class="skip-to-content-link" aria-label="Skip to main content" href="#main-content"> Skip to Main Content </a>
+          </div>
+        <div class="go-Header-rightContent">
+          
+<div class="go-SearchForm js-searchForm">
+  <form
+    class="go-InputGroup go-ShortcutKey go-SearchForm-form"
+    action="/search"
+    data-shortcut="/"
+    data-shortcut-alt="search"
+    data-gtmc="search form"
+    aria-label="Search for a package"
+    role="search"
+  >
+    <input name="q" class="go-Input js-searchFocus" aria-label="Search for a package" type="search"
+        autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
+        placeholder="Search packages or symbols"
+        value="" />
+    <input name="m" value="" hidden>
+    <button class="go-Button go-Button--inverted" aria-label="Submit search">
+      <img
+        class="go-Icon"
+        height="24"
+        width="24"
+        src="/static/shared/icon/search_gm_grey_24dp.svg"
+        alt=""
+      />
+    </button>
+  </form>
+  <button class="go-SearchForm-expandSearch js-expandSearch" data-gtmc="nav button"
+      aria-label="Open search" data-test-id="expand-search">
+    <img class="go-Icon go-Icon--inverted" height="24" width="24"
+        src="/static/shared/icon/search_gm_grey_24dp.svg" alt="">
+
+  </button>
+</div>
+
+          <ul class="go-Header-menu">
+            <li class="go-Header-menuItem">
+              <a class="js-desktop-menu-hover" href="#" data-gtmc="nav link">
+                Why Go
+                <img class="go-Icon" height="24" width="24" src="/static/shared/icon/arrow_drop_down_gm_grey_24dp.svg" alt="submenu dropdown icon">
+              </a>
+              <ul class="go-Header-submenu go-Header-submenu--why js-desktop-submenu-hover" aria-label="submenu">
+                  <li class="go-Header-submenuItem">
+                    <div>
+                      <a href="https://go.dev/solutions#case-studies">
+                        <span>Case Studies</span>
+                      </a>
+                    </div>
+                    <p>Common problems companies solve with Go</p>
+                  </li>
+                  <li class="go-Header-submenuItem">
+                    <div>
+                      <a href="https://go.dev/solutions#use-cases">
+                        <span>Use Cases</span>
+                      </a>
+                    </div>
+                    <p>Stories about how and why companies use Go</p>
+                  </li>
+                  <li class="go-Header-submenuItem">
+                    <div>
+                      <a href="https://go.dev/security/">
+                        <span>Security</span>
+                      </a>
+                    </div>
+                    <p>How Go can help keep you secure by default</p>
+                  </li>
+              </ul>
+            </li>
+            <li class="go-Header-menuItem">
+              <a href="https://go.dev/learn/" data-gtmc="nav link">Learn</a>
+            </li>
+            <li class="go-Header-menuItem">
+              <a class="js-desktop-menu-hover" href="#" data-gtmc="nav link">
+                Docs
+                <img class="go-Icon" height="24" width="24" src="/static/shared/icon/arrow_drop_down_gm_grey_24dp.svg" alt="submenu dropdown icon">
+              </a>
+              <ul class="go-Header-submenu go-Header-submenu--docs js-desktop-submenu-hover" aria-label="submenu">
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://go.dev/doc/effective_go">
+                      <span>Effective Go</span>
+                    </a>
+                  </div>
+                  <p>Tips for writing clear, performant, and idiomatic Go code</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://go.dev/doc/">
+                      <span>Go User Manual</span>
+                    </a>
+                  </div>
+                  <p>A complete introduction to building software with Go</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://pkg.go.dev/std">
+                      <span>Standard library</span>
+                    </a>
+                  </div>
+                  <p>Reference documentation for Go's standard library</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://go.dev/doc/devel/release">
+                      <span>Release Notes</span>
+                    </a>
+                  </div>
+                  <p>Learn what's new in each Go release</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="/api">
+                      <span>API</span>
+                    </a>
+                  </div>
+                  <p>Reference documentation for the pkg.go.dev API</p>
+                </li>
+              </ul>
+            </li>
+            <li class="go-Header-menuItem go-Header-menuItem--active">
+              <a href="/" data-gtmc="nav link">Packages</a>
+            </li>
+            <li class="go-Header-menuItem">
+              <a class="js-desktop-menu-hover" href="#" data-gtmc="nav link">
+                Community
+                <img class="go-Icon" height="24" width="24" src="/static/shared/icon/arrow_drop_down_gm_grey_24dp.svg" alt="submenu dropdown icon">
+              </a>
+              <ul class="go-Header-submenu go-Header-submenu--community js-desktop-submenu-hover" aria-label="submenu">
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://go.dev/talks/">
+                      <span>Recorded Talks</span>
+                    </a>
+                  </div>
+                  <p>Videos from prior events</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://www.meetup.com/pro/go">
+                      <span>Meetups</span>
+                      <i class="material-icons">
+                        <img class="go-Icon" height="24" width="24"
+                            src="/static/shared/icon/launch_gm_grey_24dp.svg" alt="">
+                      </i>
+                    </a>
+                  </div>
+                  <p>Meet other local Go developers</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://github.com/golang/go/wiki/Conferences">
+                      <span>Conferences</span>
+                      <i class="material-icons">
+                        <img class="go-Icon" height="24" width="24"
+                            src="/static/shared/icon/launch_gm_grey_24dp.svg" alt="">
+                      </i>
+                    </a>
+                  </div>
+                  <p>Learn and network with Go developers from around the world</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://go.dev/blog">
+                      <span>Go blog</span>
+                    </a>
+                  </div>
+                  <p>The Go project's official blog.</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    <a href="https://go.dev/help">
+                      <span>Go project</span>
+                    </a>
+                  </div>
+                  <p>Get help and stay informed from Go</p>
+                </li>
+                <li class="go-Header-submenuItem">
+                  <div>
+                    Get connected
+                  </div>
+                  <p></p>
+                  <div class="go-Header-socialIcons">
+                      <a
+                        class="go-Header-socialIcon"
+                        aria-label="Get connected with google-groups (Opens in new window)"
+                        title="Get connected with google-groups (Opens in new window)"
+                        href="https://groups.google.com/g/golang-nuts">
+                        <img src="/static/shared/logo/social/google-groups.svg" />
+                      </a>
+                      <a
+                        class="go-Header-socialIcon"
+                        aria-label="Get connected with github (Opens in new window)"
+                        title="Get connected with github (Opens in new window)"
+                        href="https://github.com/golang">
+                        <img src="/static/shared/logo/social/github.svg" />
+                      </a>
+                      <a
+                        class="go-Header-socialIcon"
+                        aria-label="Get connected with twitter (Opens in new window)"
+                        title="Get connected with twitter (Opens in new window)"
+                        href="https://twitter.com/golang">
+                        <img src="/static/shared/logo/social/twitter.svg" />
+                      </a>
+                      <a
+                        class="go-Header-socialIcon"
+                        aria-label="Get connected with reddit (Opens in new window)"
+                        title="Get connected with reddit (Opens in new window)"
+                        href="https://www.reddit.com/r/golang/">
+                        <img src="/static/shared/logo/social/reddit.svg" />
+                      </a>
+                      <a
+                        class="go-Header-socialIcon"
+                        aria-label="Get connected with slack (Opens in new window)"
+                        title="Get connected with slack (Opens in new window)"
+                        href="https://invite.slack.golangbridge.org/">
+                        <img src="/static/shared/logo/social/slack.svg" />
+                      </a>
+                      <a
+                        class="go-Header-socialIcon"
+                        aria-label="Get connected with stack-overflow (Opens in new window)"
+                        title=""
+                        href="https://stackoverflow.com/collectives/go">
+                        <img src="/static/shared/logo/social/stack-overflow.svg" />
+                      </a>
+                  </div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <button class="go-Header-navOpen js-headerMenuButton go-Header-navOpen--white" data-gtmc="nav button" aria-label="Open navigation">
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+  <aside class="go-NavigationDrawer js-header">
+    <nav class="go-NavigationDrawer-nav">
+      <div class="go-NavigationDrawer-header">
+        <a href="https://go.dev/">
+          <img class="go-NavigationDrawer-logo" src="/static/shared/logo/go-blue.svg" alt="Go.">
+        </a>
+      </div>
+      <ul class="go-NavigationDrawer-list">
+          <li class="go-NavigationDrawer-listItem js-mobile-subnav-trigger go-NavigationDrawer-hasSubnav">
+            <a href="#">
+              <span>Why Go</span>
+              <i class="material-icons">
+                <img class="go-Icon" height="24" width="24"
+                  src="/static/shared/icon/navigate_next_gm_grey_24dp.svg" alt="">
+              </i>
+            </a>
+
+            <div class="go-NavigationDrawer go-NavigationDrawer-submenuItem">
+              <div class="go-NavigationDrawer-nav">
+                <div class="go-NavigationDrawer-header">
+                  <a href="#">
+                    <i class="material-icons">
+                      <img class="go-Icon" height="24" width="24"
+                        src="/static/shared/icon/navigate_before_gm_grey_24dp.svg" alt="">
+                      </i>
+                      Why Go
+                  </a>
+                </div>
+                <ul class="go-NavigationDrawer-list">
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/solutions#case-studies">
+                      Case Studies
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/solutions#use-cases">
+                      Use Cases
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/security/">
+                      Security
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+          <li class="go-NavigationDrawer-listItem">
+            <a href="https://go.dev/learn/">Learn</a>
+          </li>
+          <li class="go-NavigationDrawer-listItem js-mobile-subnav-trigger go-NavigationDrawer-hasSubnav">
+            <a href="#">
+              <span>Docs</span>
+              <i class="material-icons">
+                <img class="go-Icon" height="24" width="24"
+                  src="/static/shared/icon/navigate_next_gm_grey_24dp.svg" alt="">
+              </i>
+            </a>
+
+            <div class="go-NavigationDrawer go-NavigationDrawer-submenuItem">
+              <div class="go-NavigationDrawer-nav">
+                <div class="go-NavigationDrawer-header">
+                  <a href="#"><i class="material-icons">
+                    <img class="go-Icon" height="24" width="24"
+                      src="/static/shared/icon/navigate_before_gm_grey_24dp.svg" alt="">
+                    </i>
+                    Docs
+                  </a>
+                </div>
+                <ul class="go-NavigationDrawer-list">
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/doc/effective_go">
+                      Effective Go
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/doc/">
+                      Go User Manual
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://pkg.go.dev/std">
+                      Standard library
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/doc/devel/release">
+                      Release Notes
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="/api">
+                      API
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+          <li class="go-NavigationDrawer-listItem go-NavigationDrawer-listItem--active">
+            <a href="/">Packages</a>
+          </li>
+          <li class="go-NavigationDrawer-listItem js-mobile-subnav-trigger go-NavigationDrawer-hasSubnav">
+            <a href="#">
+              <span>Community</span>
+              <i class="material-icons">
+                <img class="go-Icon" height="24" width="24"
+                  src="/static/shared/icon/navigate_next_gm_grey_24dp.svg" alt="">
+              </i>
+            </a>
+            <div class="go-NavigationDrawer go-NavigationDrawer-submenuItem">
+              <div class="go-NavigationDrawer-nav">
+                <div class="go-NavigationDrawer-header">
+                  <a href="#">
+                    <i class="material-icons">
+                      <img class="go-Icon" height="24" width="24"
+                        src="/static/shared/icon/navigate_before_gm_grey_24dp.svg" alt="">
+                    </i>
+                    Community
+                  </a>
+                </div>
+                <ul class="go-NavigationDrawer-list">
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/talks/">
+                      Recorded Talks
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://www.meetup.com/pro/go">
+                      Meetups
+                      <i class="material-icons">
+                      <img class="go-Icon" height="24" width="24"
+                          src="/static/shared/icon/launch_gm_grey_24dp.svg" alt="">
+                      </i>
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://github.com/golang/go/wiki/Conferences">
+                      Conferences
+                      <i class="material-icons">
+                        <img class="go-Icon" height="24" width="24" src="/static/shared/icon/launch_gm_grey_24dp.svg" alt="">
+                      </i>
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/blog">
+                      Go blog
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <a href="https://go.dev/help">
+                      Go project
+                    </a>
+                  </li>
+                  <li class="go-NavigationDrawer-listItem">
+                    <div>Get connected</div>
+                    <div class="go-Header-socialIcons">
+                        <a class="go-Header-socialIcon" href="https://groups.google.com/g/golang-nuts"><img src="/static/shared/logo/social/google-groups.svg" /></a>
+                        <a class="go-Header-socialIcon" href="https://github.com/golang"><img src="/static/shared/logo/social/github.svg" /></a>
+                        <a class="go-Header-socialIcon" href="https://twitter.com/golang"><img src="/static/shared/logo/social/twitter.svg" /></a>
+                        <a class="go-Header-socialIcon" href="https://www.reddit.com/r/golang/"><img src="/static/shared/logo/social/reddit.svg" /></a>
+                        <a class="go-Header-socialIcon" href="https://invite.slack.golangbridge.org/"><img src="/static/shared/logo/social/slack.svg" /></a>
+                        <a class="go-Header-socialIcon" href="https://stackoverflow.com/collectives/go"><img src="/static/shared/logo/social/stack-overflow.svg" /></a>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </li>
+      </ul>
+    </nav>
+  </aside>
+  <div class="go-NavigationDrawer-scrim js-scrim" role="presentation"></div>
+
+    
+  <main class="go-Main" id="main-content">
+    <div class="go-Main-banner" role="alert">
+        <details class="js-versionDetails">
+            <summary class="go-Message go-Message--alert">
+            <img
+                class="go-Icon"
+                height="24"
+                width="24"
+                src="/static/shared/icon/alert_gm_grey_24dp.svg"
+                alt="Alert"
+            />&nbsp;
+            Affected by <a href="/vuln/GO-2022-0617">GO-2022-0617</a>
+             and 2 other vulnerabilities
+          </summary>
+          <div>
+            
+  <div class="go-Message go-Message--alert">
+    <img
+        class="go-Icon"
+        height="24"
+        width="24"
+        src="/static/shared/icon/alert_gm_grey_24dp.svg"
+        alt="Alert"
+    />&nbsp;
+    <a href="/vuln/GO-2022-0617">GO-2022-0617</a>: WITHDRAWN: Potential proxy IP restriction bypass in Kubernetes in k8s.io/kubernetes
+  </div>
+
+  <div class="go-Message go-Message--alert">
+    <img
+        class="go-Icon"
+        height="24"
+        width="24"
+        src="/static/shared/icon/alert_gm_grey_24dp.svg"
+        alt="Alert"
+    />&nbsp;
+    <a href="/vuln/GO-2025-3521">GO-2025-3521</a>: Kubernetes GitRepo Volume Inadvertent Local Repository Access in k8s.io/kubernetes
+  </div>
+
+  <div class="go-Message go-Message--alert">
+    <img
+        class="go-Icon"
+        height="24"
+        width="24"
+        src="/static/shared/icon/alert_gm_grey_24dp.svg"
+        alt="Alert"
+    />&nbsp;
+    <a href="/vuln/GO-2025-3547">GO-2025-3547</a>: Kubernetes kube-apiserver Vulnerable to Race Condition in k8s.io/kubernetes
+  </div>
+
+          </div>
+        </details>
+    </div>
+    <header class="go-Main-header js-mainHeader">
+  
+  
+  <nav class="go-Main-headerBreadcrumb go-Breadcrumb" aria-label="Breadcrumb" data-test-id="UnitHeader-breadcrumb">
+    <ol>
+      
+        
+          <li data-test-id="UnitHeader-breadcrumbItem">
+            <a href="/" data-gtmc="breadcrumb link">Discover Packages</a>
+          </li>
+        
+          <li data-test-id="UnitHeader-breadcrumbItem">
+            <a href="/k8s.io/kubernetes" data-gtmc="breadcrumb link">k8s.io/kubernetes</a>
+          </li>
+        
+          <li data-test-id="UnitHeader-breadcrumbItem">
+            <a href="/k8s.io/kubernetes/pkg" data-gtmc="breadcrumb link">pkg</a>
+          </li>
+        
+        <li>
+          <a href="/k8s.io/kubernetes@v1.36.3/pkg/features" data-gtmc="breadcrumb link" aria-current="location"
+              data-test-id="UnitHeader-breadcrumbCurrent">
+            features
+          </a>
+          
+            <button
+              class="go-Button go-Button--inline go-Clipboard js-clipboard"
+              title="Copy path to clipboard.&#10;&#10;k8s.io/kubernetes/pkg/features"
+              aria-label="Copy Path to Clipboard"
+              data-to-copy="k8s.io/kubernetes/pkg/features"
+              data-gtmc="breadcrumbs button"
+            >
+              <img
+                class="go-Icon go-Icon--accented"
+                height="24"
+                width="24"
+                src="/static/shared/icon/content_copy_gm_grey_24dp.svg"
+                alt=""
+              >
+            </button>
+          
+        
+      </li>
+    </ol>
+  </nav>
+
+  <div class="go-Main-headerContent">
+    
+  <div class="go-Main-headerTitle js-stickyHeader">
+    <a class="go-Main-headerLogo" href="https://go.dev/" aria-hidden="true" tabindex="-1" data-gtmc="header link" aria-label="Link to Go Homepage">
+      <img height="78" width="207" src="/static/shared/logo/go-blue.svg" alt="Go">
+    </a>
+    <h1 class="UnitHeader-titleHeading" data-test-id="UnitHeader-title">features</h1>
+    
+      <span class="go-Chip go-Chip--inverted">package</span>
+    
+    
+      
+        <button
+          class="go-Button go-Button--inline go-Clipboard js-clipboard"
+          title="Copy path to clipboard.&#10;&#10;k8s.io/kubernetes/pkg/features"
+          aria-label="Copy Path to Clipboard"
+          data-to-copy="k8s.io/kubernetes/pkg/features"
+          data-gtmc="title button"
+          tabindex="-1"
+        >
+          <img
+            class="go-Icon go-Icon--accented"
+            height="24"
+            width="24"
+            src="/static/shared/icon/content_copy_gm_grey_24dp.svg"
+            alt=""
+          />
+        </button>
+      
+    
+  </div>
+
+    
+      
+  <div class="go-Main-headerDetails">
+    
+      
+  <span class="go-Main-headerDetailItem" data-test-id="UnitHeader-version">
+    <a href="?tab=versions" aria-label="Version: v1.36.3" 
+    data-gtmc="header link" aria-describedby="version-description">
+      <span class="go-textSubtle" aria-hidden="true">Version: </span>
+        v1.36.3
+    </a>
+    <div class="screen-reader-only" id="version-description" hidden>
+      Opens a new window with list of versions in this module.
+    </div>
+    
+    <span class="DetailsHeader-badge--latest" data-test-id="UnitHeader-minorVersionBanner">
+      <span class="go-Chip DetailsHeader-span--latest">Latest</span>
+      <span class="go-Chip DetailsHeader-span--notAtLatest">
+        Latest
+        
+  <details class="go-Tooltip js-tooltip" data-gtmc="tooltip">
+    <summary>
+      <img class="go-Icon go-Icon--inverted" height="24" width="24" src="/static/shared/icon/alert_gm_grey_24dp.svg" alt="Warning">
+    </summary>
+    <p>This package is not in the latest version of its module.</p>
+  </details>
+
+      </span>
+      <a href="/k8s.io/kubernetes/pkg/features" aria-label="Go to Latest Version" data-gtmc="header link">
+        <span class="go-Chip go-Chip--alert DetailsHeader-span--goToLatest">Go to latest</span>
+      </a>
+    </span>
+  </span>
+
+      
+  <span class="go-Main-headerDetailItem" data-test-id="UnitHeader-commitTime">
+    Published: Jul 22, 2026
+  </span>
+
+      
+  <span class="go-Main-headerDetailItem" data-test-id="UnitHeader-licenses">
+    License: <a href="/k8s.io/kubernetes/pkg/features?tab=licenses" data-test-id="UnitHeader-license" 
+        data-gtmc="header link" aria-describedby="license-description">Apache-2.0</a>
+      
+    
+  </span>
+  <div class="screen-reader-only" id="license-description" hidden>
+    Opens a new window with license information.
+  </div>
+
+      
+        
+  <span class="go-Main-headerDetailItem" data-test-id="UnitHeader-imports">
+    <a href="/k8s.io/kubernetes/pkg/features?tab=imports" aria-label="Imports: 10"
+        data-gtmc="header link" aria-describedby="imports-description">
+      <span class="go-textSubtle">Imports: </span>10
+    </a>
+  </span>
+  <div class="screen-reader-only" id="imports-description" hidden>
+    Opens a new window with list of imports.
+  </div>
+
+        
+  <span class="go-Main-headerDetailItem" data-test-id="UnitHeader-importedby">
+    <a href="/k8s.io/kubernetes/pkg/features?tab=importedby" aria-label="Imported By: 2,250"
+        data-gtmc="header link" aria-describedby="importedby-description">
+       <span class="go-textSubtle">Imported by: </span>2,250
+    </a>
+  </span>
+  <div class="screen-reader-only" id="importedby-description" hidden>
+    Opens a new window with list of known importers.
+  </div>
+
+      
+    
+  </div>
+  
+  <div class="UnitHeader-overflowContainer">
+    <svg class="UnitHeader-overflowImage" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+      <path d="M0 0h24v24H0z" fill="none"/>
+      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+    </svg>
+    <select class="UnitHeader-overflowSelect js-selectNav" tabindex="-1">
+      <option value="/">Main</option>
+      <option value="/k8s.io/kubernetes/pkg/features?tab=versions">
+        Versions
+      </option>
+      <option value="/k8s.io/kubernetes/pkg/features?tab=licenses">
+        Licenses
+      </option>
+      
+        <option value="/k8s.io/kubernetes/pkg/features?tab=imports">
+          Imports
+        </option>
+        <option value="/k8s.io/kubernetes/pkg/features?tab=importedby">
+          Imported By
+        </option>
+      
+    </select>
+  </div>
+
+
+    
+  </div>
+
+</header>
+    
+      <aside class="go-Main-aside  js-mainAside">
+  
+  <div class="UnitMeta">
+    <h2 class="go-textLabel">Details</h2>
+    
+  <ul class="UnitMeta-details">
+    <li>
+      <details class="go-Tooltip js-tooltip" data-gtmc="tooltip">
+        <summary class="go-textSubtle">
+          
+  <img class="go-Icon go-Icon--accented"
+    tabindex="0"
+    role="button"src="/static/shared/icon/check_circle_gm_grey_24dp.svg" alt="checked" aria-label="Valid file, toggle tooltip"height="24" width="24">
+
+          Valid <a href="https://github.com/kubernetes/kubernetes/tree/v1.36.3/go.mod" target="_blank" rel="noopener">go.mod</a> file
+          <img class="go-Icon" role="button" tabindex="0" src="/static/shared/icon/help_gm_grey_24dp.svg" alt="" aria-label="Toggle go.mod validity tooltip" height="24" width="24">
+        </summary>
+        <p aria-live="polite" role="tooltip">
+          The Go module system was introduced in Go 1.11 and is the official dependency management
+          solution for Go.
+        </p>
+      </details>
+    </li>
+    <li>
+      <details class="go-Tooltip js-tooltip" data-gtmc="tooltip">
+        <summary class="go-textSubtle">
+          
+  <img class="go-Icon go-Icon--accented"
+    tabindex="0"
+    role="button"src="/static/shared/icon/check_circle_gm_grey_24dp.svg" alt="checked" aria-label="Valid file, toggle tooltip"height="24" width="24">
+
+          Redistributable license
+          <img class="go-Icon" role="button" tabindex="0" src="/static/shared/icon/help_gm_grey_24dp.svg" alt="" aria-label="Toggle redistributable help tooltip" height="24" width="24">
+        </summary>
+        <p aria-live="polite" role="tooltip">
+          Redistributable licenses place minimal restrictions on how software can be used,
+          modified, and redistributed.
+        </p>
+      </details>
+    </li>
+    <li>
+      <details class="go-Tooltip js-tooltip" data-gtmc="tooltip">
+        <summary class="go-textSubtle">
+          
+  <img class="go-Icon go-Icon--accented"
+    tabindex="0"
+    role="button"src="/static/shared/icon/check_circle_gm_grey_24dp.svg" alt="checked" aria-label="Valid file, toggle tooltip"height="24" width="24">
+
+          Tagged version
+          <img class="go-Icon" role="button" tabindex="0" src="/static/shared/icon/help_gm_grey_24dp.svg" alt="" aria-label="Toggle tagged version tooltip" height="24" width="24">
+        </summary>
+        <p aria-live="polite" role="tooltip">Modules with tagged versions give importers more predictable builds.</p>
+      </details>
+    </li>
+    <li>
+      <details class="go-Tooltip js-tooltip" data-gtmc="tooltip">
+        <summary class="go-textSubtle">
+          
+  <img class="go-Icon go-Icon--accented"
+    tabindex="0"
+    role="button"src="/static/shared/icon/check_circle_gm_grey_24dp.svg" alt="checked" aria-label="Valid file, toggle tooltip"height="24" width="24">
+
+          Stable version
+          <img class="go-Icon" role="button" tabindex="0" aria-label="Toggle stable version tooltip" src="/static/shared/icon/help_gm_grey_24dp.svg" alt="" height="24" width="24">
+        </summary>
+        <p aria-live="polite" role="tooltip">When a project reaches major version v1 it is considered stable.</p>
+      </details>
+    </li>
+    <li class="UnitMeta-detailsLearn">
+      <a href="/about#best-practices" data-gtmc="meta link">Learn more about best practices</a>
+    </li>
+  </ul>
+
+    <h2 class="go-textLabel">Repository</h2>
+    <div class="UnitMeta-repo">
+      
+        <a href="https://github.com/kubernetes/kubernetes" title="https://github.com/kubernetes/kubernetes" target="_blank" rel="noopener">
+          github.com/kubernetes/kubernetes
+        </a>
+      
+    </div>
+    
+      <h2 class="go-textLabel" data-test-id="links-heading">Links</h2>
+      <ul class="UnitMeta-links">
+        
+        
+          <li>
+            <a href="https://deps.dev/go/k8s.io%2Fkubernetes/v1.36.3" title="View this module on Open Source Insights"
+              target="_blank" rel="noopener" data-test-id="meta-link-depsdev">
+              <img class="link-Icon" src="/static/shared/icon/depsdev-logo.svg"
+                alt="Open Source Insights Logo" />
+              Open Source Insights
+            </a>
+          </li>
+        
+        
+        
+  
+
+        
+  
+
+        
+  
+
+      </ul>
+    
+  </div>
+
+</aside>
+    
+    <nav class="go-Main-nav go-Main-nav--sticky js-mainNav" aria-label="Outline">
+  <div class="go-Main-navDesktop">
+    
+  <div class="UnitOutline-jumpTo">
+    <button class="UnitOutline-jumpToInput go-ShortcutKey js-jumpToInput"
+        aria-controls="jump-to-modal"
+        aria-label="Open Jump to Identifier"
+        data-shortcut="f"
+        data-shortcut-alt="find"
+        data-test-id="jump-to-button" data-gtmc="outline button">
+      Jump to ...
+    </button>
+  </div>
+  <ul class="go-Tree js-tree" role="tree" aria-label="Outline">
+    
+    
+      <li>
+        <a href="#section-documentation" data-gtmc="outline link">
+          Documentation
+        </a>
+        
+<ul>
+  <li class="DocNav-overview">
+      <a href="#pkg-index" data-gtmc="doc outline link">
+        Index
+      </a>
+    </li>
+    <li class="DocNav-constants">
+      <a href="#pkg-constants" data-gtmc="doc outline link">
+        Constants
+      </a>
+    </li>
+    <li class="DocNav-variables">
+      <a href="#pkg-variables" data-gtmc="doc outline link">
+        Variables
+      </a>
+    </li>
+    <li class="DocNav-functions">
+      <a href="#pkg-functions" data-gtmc="doc outline link">
+        Functions
+      </a>
+      
+    </li>
+    <li class="DocNav-types">
+      <a href="#pkg-types" data-gtmc="doc outline link">
+        Types
+      </a>
+      <ul>
+         
+      </ul>
+    </li>
+  
+  
+</ul>
+
+      </li>
+    
+    
+      <li>
+        <a href="#section-sourcefiles" data-gtmc="outline link">
+          Source Files
+        </a>
+      </li>
+    
+    
+  </ul>
+
+  </div>
+  <div class="go-Main-navMobile js-mainNavMobile">
+    <label class="go-Label">
+      <select class="go-Select">
+        
+          <option selected disabled>Documentation</option>
+        
+      </select>
+    </label>
+  </div>
+</nav>
+    <article class="go-Main-article js-mainContent">
+  <div class="UnitDetails" data-test-id="UnitDetails" style="display: block;">
+    <div class="UnitDetails-content js-unitDetailsContent" data-test-id="UnitDetails-content">
+      
+      
+        
+          
+  <div class="UnitDoc">
+    <h2 class="UnitDoc-title" id="section-documentation">
+      <img class="go-Icon" height="24" width="24" src="/static/shared/icon/code_gm_grey_24dp.svg" alt="">
+      Documentation
+      <a class="UnitDoc-idLink" href="#section-documentation" title="Go to Documentation" aria-label="Go to Documentation">¶</a>
+    </h2>
+    
+  
+    
+  
+
+    <div class="Documentation js-documentation">
+      
+        
+
+<div class="Documentation-content js-docContent"> <section class="Documentation-index">
+    <h3 id="pkg-index" class="Documentation-indexHeader">Index <a href="#pkg-index" title="Go to Index" aria-label="Go to Index">¶</a></h3>
+
+<ul class="Documentation-indexList">
+<li class="Documentation-indexConstants"><a href="#pkg-constants">Constants</a></li>
+</ul>
+</section><h3 tabindex="-1" id="pkg-constants" class="Documentation-constantsHeader">Constants <a href="#pkg-constants" title="Go to Constants" aria-label="Go to Constants">¶</a></h3>
+
+  <section class="Documentation-constants">
+    <div class="Documentation-declaration">
+      <span class="Documentation-declarationLink"><a class="Documentation-source" href="https://github.com/kubernetes/kubernetes/blob/v1.36.3/pkg/features/kube_features.go#L41">View Source</a></span>
+      <pre>const (
+<span id="AllowDNSOnlyNodeCSR" data-kind="constant">	<span class="comment">// owner: @aojea</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allow kubelet to request a certificate without any Node IP available, only</span>
+	<span class="comment">// with DNS names.</span>
+	AllowDNSOnlyNodeCSR <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;AllowDNSOnlyNodeCSR&#34;
+
+<span id="AllowInsecureKubeletCertificateSigningRequests" data-kind="constant">	<span class="comment">// owner: @micahhausler</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Setting AllowInsecureKubeletCertificateSigningRequests to true disables node admission validation of CSRs</span>
+	<span class="comment">// for kubelet signers where CN=system:node:$nodeName.</span>
+	AllowInsecureKubeletCertificateSigningRequests <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;AllowInsecureKubeletCertificateSigningRequests&#34;
+
+<span id="AllowOverwriteTerminationGracePeriodSeconds" data-kind="constant">	<span class="comment">// owner: @HirazawaUi</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allow spec.terminationGracePeriodSeconds to be overridden by MaxPodGracePeriodSeconds in soft evictions.</span>
+	AllowOverwriteTerminationGracePeriodSeconds <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;AllowOverwriteTerminationGracePeriodSeconds&#34;
+
+<span id="AllowServiceExternalIPs" data-kind="constant">	<span class="comment">// owner: @adrianmoisey</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5707">https://kep.k8s.io/5707</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// When enabled, kube-proxy will program iptables/nftables/ipvs rules for Service.spec.externalIPs.</span>
+	<span class="comment">// When disabled, kube-proxy will not program rules for externalIPs, effectively disabling this</span>
+	<span class="comment">// deprecated feature.</span>
+	AllowServiceExternalIPs <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;AllowServiceExternalIPs&#34;
+
+<span id="AnyVolumeDataSource" data-kind="constant">	<span class="comment">// owner: @bswartz</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables usage of any object for volume data source in PVCs</span>
+	AnyVolumeDataSource <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;AnyVolumeDataSource&#34;
+
+<span id="AuthorizeNodeWithSelectors" data-kind="constant">	<span class="comment">// owner: @liggitt</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4601">https://kep.k8s.io/4601</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Make the Node authorizer use fine-grained selector authorization.</span>
+	<span class="comment">// Requires AuthorizeWithSelectors to be enabled.</span>
+	AuthorizeNodeWithSelectors <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;AuthorizeNodeWithSelectors&#34;
+
+<span id="AuthorizePodWebsocketUpgradeCreatePermission" data-kind="constant">	<span class="comment">// owner: @seans3</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4006">http://kep.k8s.io/4006</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Forces authorization of the &#34;create&#34; verb for pod subresources like exec, attach, and portforward.</span>
+	<span class="comment">// See: <a href="https://github.com/kubernetes/kubernetes/issues/133515">https://github.com/kubernetes/kubernetes/issues/133515</a></span>
+	AuthorizePodWebsocketUpgradeCreatePermission <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;AuthorizePodWebsocketUpgradeCreatePermission&#34;
+
+<span id="CPUCFSQuotaPeriod" data-kind="constant">	<span class="comment">// owner: @szuecs</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enable nodes to change CPUCFSQuotaPeriod</span>
+	CPUCFSQuotaPeriod <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CustomCPUCFSQuotaPeriod&#34;
+
+<span id="CPUManagerPolicyAlphaOptions" data-kind="constant">	<span class="comment">// owner: @fromanirh</span>
+</span>	<span class="comment">// beta: see below.</span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow fine-tuning of cpumanager policies, experimental, alpha-quality options</span>
+	<span class="comment">// Per <a href="https://groups.google.com/g/kubernetes-sig-architecture/c/Nxsc7pfe5rw/m/vF2djJh0BAAJ">https://groups.google.com/g/kubernetes-sig-architecture/c/Nxsc7pfe5rw/m/vF2djJh0BAAJ</a></span>
+	<span class="comment">// We want to avoid a proliferation of feature gates. This feature gate:</span>
+	<span class="comment">// - will guard *a group* of cpumanager options whose quality level is alpha.</span>
+	<span class="comment">// - will never graduate to beta or stable.</span>
+	<span class="comment">// See <a href="https://groups.google.com/g/kubernetes-sig-architecture/c/Nxsc7pfe5rw/m/vF2djJh0BAAJ">https://groups.google.com/g/kubernetes-sig-architecture/c/Nxsc7pfe5rw/m/vF2djJh0BAAJ</a></span>
+	<span class="comment">// for details about the removal of this feature gate.</span>
+	CPUManagerPolicyAlphaOptions <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CPUManagerPolicyAlphaOptions&#34;
+
+<span id="CPUManagerPolicyBetaOptions" data-kind="constant">	<span class="comment">// owner: @fromanirh</span>
+</span>	<span class="comment">// beta: see below.</span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow fine-tuning of cpumanager policies, experimental, beta-quality options</span>
+	<span class="comment">// Per <a href="https://groups.google.com/g/kubernetes-sig-architecture/c/Nxsc7pfe5rw/m/vF2djJh0BAAJ">https://groups.google.com/g/kubernetes-sig-architecture/c/Nxsc7pfe5rw/m/vF2djJh0BAAJ</a></span>
+	<span class="comment">// We want to avoid a proliferation of feature gates. This feature gate:</span>
+	<span class="comment">// - will guard *a group* of cpumanager options whose quality level is beta.</span>
+	<span class="comment">// - is thus *introduced* as beta</span>
+	<span class="comment">// - will never graduate to stable.</span>
+	<span class="comment">// See <a href="https://groups.google.com/g/kubernetes-sig-architecture/c/Nxsc7pfe5rw/m/vF2djJh0BAAJ">https://groups.google.com/g/kubernetes-sig-architecture/c/Nxsc7pfe5rw/m/vF2djJh0BAAJ</a></span>
+	<span class="comment">// for details about the removal of this feature gate.</span>
+	CPUManagerPolicyBetaOptions <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CPUManagerPolicyBetaOptions&#34;
+
+<span id="CPUManagerPolicyOptions" data-kind="constant">	<span class="comment">// owner: @ffromani</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allow the usage of options to fine-tune the cpumanager policies.</span>
+	CPUManagerPolicyOptions <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CPUManagerPolicyOptions&#34;
+
+<span id="CRIListStreaming" data-kind="constant">	<span class="comment">// owner: @bitoku</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5825">https://kep.k8s.io/5825</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables using streaming RPCs for CRI list operations.</span>
+	CRIListStreaming <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CRIListStreaming&#34;
+
+<span id="CSIServiceAccountTokenSecrets" data-kind="constant">	<span class="comment">// owner: @aramase</span>
+</span>	<span class="comment">// kep:  <a href="http://kep.k8s.io/5538">http://kep.k8s.io/5538</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables CSI drivers to opt-in for receiving service account tokens from kubelet</span>
+	<span class="comment">// through the dedicated secrets field in NodePublishVolumeRequest instead of the volume_context field.</span>
+	CSIServiceAccountTokenSecrets <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CSIServiceAccountTokenSecrets&#34;
+
+<span id="CSIVolumeHealth" data-kind="constant">	<span class="comment">// owner: @fengzixu</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables kubelet to detect CSI volume condition and send the event of the abnormal volume to the corresponding pod that is using it.</span>
+	CSIVolumeHealth <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CSIVolumeHealth&#34;
+
+<span id="ChangeContainerStatusOnKubeletRestart" data-kind="constant">	<span class="comment">// owner: @HirazawaUi</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enabling this feature gate will cause the pod&#39;s status to change due to a kubelet restart.</span>
+	ChangeContainerStatusOnKubeletRestart <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ChangeContainerStatusOnKubeletRestart&#34;
+
+<span id="ClearingNominatedNodeNameAfterBinding" data-kind="constant">	<span class="comment">// owner: @sanposhiho @wojtek-t</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5278">https://kep.k8s.io/5278</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Clear pod.Status.NominatedNodeName when pod is bound to a node.</span>
+	<span class="comment">// This prevents stale information from affecting external scheduling components.</span>
+	ClearingNominatedNodeNameAfterBinding <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ClearingNominatedNodeNameAfterBinding&#34;
+
+<span id="ClusterTrustBundle" data-kind="constant">	<span class="comment">// owner: @ahmedtd</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enable ClusterTrustBundle objects and Kubelet integration.</span>
+	ClusterTrustBundle <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ClusterTrustBundle&#34;
+
+<span id="ClusterTrustBundleProjection" data-kind="constant">	<span class="comment">// owner: @ahmedtd</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enable ClusterTrustBundle Kubelet projected volumes.  Depends on ClusterTrustBundle.</span>
+	ClusterTrustBundleProjection <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ClusterTrustBundleProjection&#34;
+
+<span id="ContainerCheckpoint" data-kind="constant">	<span class="comment">// owner: @adrianreber</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/2008">https://kep.k8s.io/2008</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables container Checkpoint support in the kubelet</span>
+	ContainerCheckpoint <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ContainerCheckpoint&#34;
+
+<span id="ContainerRestartRules" data-kind="constant">	<span class="comment">// onwer: @yuanwang04</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5307">https://kep.k8s.io/5307</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Supports container restart policy and container restart policy rules to override the pod restart policy.</span>
+	<span class="comment">// Enable a single container to restart even if the pod has restart policy &#34;Never&#34;.</span>
+	ContainerRestartRules <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ContainerRestartRules&#34;
+
+<span id="ContainerStopSignals" data-kind="constant">	<span class="comment">// owner: @sreeram-venkitesh</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables configuring custom stop signals for containers from container lifecycle</span>
+	ContainerStopSignals <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ContainerStopSignals&#34;
+
+<span id="CoordinatedLeaderElection" data-kind="constant">	<span class="comment">// owner: @jefftree</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4355">https://kep.k8s.io/4355</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables coordinated leader election in the API server</span>
+	CoordinatedLeaderElection <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CoordinatedLeaderElection&#34;
+
+<span id="CrossNamespaceVolumeDataSource" data-kind="constant">	<span class="comment">// owner: @ttakahashi21 @mkimuram</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3294">https://kep.k8s.io/3294</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable usage of Provision of PVCs from snapshots in other namespaces</span>
+	CrossNamespaceVolumeDataSource <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;CrossNamespaceVolumeDataSource&#34;
+
+<span id="DRAAdminAccess" data-kind="constant">	<span class="comment">// owner: @ritazh</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5018">http://kep.k8s.io/5018</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for requesting admin access in a ResourceClaim.</span>
+	<span class="comment">// Admin access is granted even if a device is already in use and,</span>
+	<span class="comment">// depending on the DRA driver, may enable additional permissions</span>
+	<span class="comment">// when a container uses the allocated device.</span>
+	DRAAdminAccess <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAAdminAccess&#34;
+
+<span id="DRAConsumableCapacity" data-kind="constant">	<span class="comment">// owner: @sunya-ch</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5075">https://kep.k8s.io/5075</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// DRAConsumableCapacity</span>
+	DRAConsumableCapacity <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAConsumableCapacity&#34;
+
+<span id="DRADeviceBindingConditions" data-kind="constant">	<span class="comment">// owner: @KobayashiD27</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5007">http://kep.k8s.io/5007</a></span>
+	<span class="comment">// alpha: v1.34</span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for delaying the binding of pods</span>
+	<span class="comment">// which depend on devices with binding conditions.</span>
+	<span class="comment">//</span>
+	<span class="comment">// DRAResourceClaimDeviceStatus also needs to be</span>
+	<span class="comment">// enabled.</span>
+	DRADeviceBindingConditions <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRADeviceBindingConditions&#34;
+
+<span id="DRADeviceTaintRules" data-kind="constant">	<span class="comment">// owner: @pohly</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5055">http://kep.k8s.io/5055</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// DeviceTaintRules allow administrators to add taints to devices.</span>
+	DRADeviceTaintRules <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRADeviceTaintRules&#34;
+
+<span id="DRADeviceTaints" data-kind="constant">	<span class="comment">// owner: @pohly</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5055">http://kep.k8s.io/5055</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Marking devices as tainted can prevent using them for new pods and/or</span>
+	<span class="comment">// cause pods using them to stop. Users can decide to tolerate taints.</span>
+	DRADeviceTaints <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRADeviceTaints&#34;
+
+<span id="DRAExtendedResource" data-kind="constant">	<span class="comment">// owner: @yliaog</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5004">http://kep.k8s.io/5004</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for providing extended resource requests backed by DRA.</span>
+	DRAExtendedResource <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAExtendedResource&#34;
+
+<span id="DRAListTypeAttributes" data-kind="constant">	<span class="comment">// owner: @everpeace</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5491">http://kep.k8s.io/5491</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable list type attributes for DRA devices in ResourceSlice</span>
+	<span class="comment">// and extends ResourceClaim&#39;s matchAttribute/distinctAttribute</span>
+	<span class="comment">// semantics so that they can work with list type attributes.</span>
+	DRAListTypeAttributes <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAListTypeAttributes&#34;
+
+<span id="DRANodeAllocatableResources" data-kind="constant">	<span class="comment">// owner: @pravk03</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5517">https://kep.k8s.io/5517</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for node allocatable resources backed by DRA.</span>
+	DRANodeAllocatableResources <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRANodeAllocatableResources&#34;
+
+<span id="DRAPartitionableDevices" data-kind="constant">	<span class="comment">// owner: @mortent, @cici37</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4815">http://kep.k8s.io/4815</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for dynamically partitioning devices based on</span>
+	<span class="comment">// which parts of them were allocated during scheduling.</span>
+	<span class="comment">//</span>
+	DRAPartitionableDevices <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAPartitionableDevices&#34;
+
+<span id="DRAPrioritizedList" data-kind="constant">	<span class="comment">// owner: @mortent</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4816">http://kep.k8s.io/4816</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for providing a prioritized list of requests</span>
+	<span class="comment">// for resources. The first entry that can be satisfied will</span>
+	<span class="comment">// be selected.</span>
+	DRAPrioritizedList <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAPrioritizedList&#34;
+
+<span id="DRAResourceClaimDeviceStatus" data-kind="constant">	<span class="comment">// owner: @LionelJouin</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4817">http://kep.k8s.io/4817</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support the ResourceClaim.status.devices field and for setting this</span>
+	<span class="comment">// status from DRA drivers.</span>
+	DRAResourceClaimDeviceStatus <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAResourceClaimDeviceStatus&#34;
+
+<span id="DRAResourceClaimGranularStatusAuthorization" data-kind="constant">	<span class="comment">// owner: @aojea</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4817">http://kep.k8s.io/4817</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables fine-grained authorization checks for ResourceClaim status updates.</span>
+	<span class="comment">// Requires separate permission on resourceclaims/binding to update</span>
+	<span class="comment">// status.allocation and status.reservedFor, and per-driver permission on</span>
+	<span class="comment">// resourceclaims/driver using associated-node / arbitrary-node verb prefixes</span>
+	<span class="comment">// to update status.devices.</span>
+	DRAResourceClaimGranularStatusAuthorization <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAResourceClaimGranularStatusAuthorization&#34;
+
+<span id="DRAResourcePoolStatus" data-kind="constant">	<span class="comment">// owner: @nmn3m</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5677">http://kep.k8s.io/5677</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables ResourcePoolStatusRequest API for querying DRA resource pool</span>
+	<span class="comment">// availability status.</span>
+	DRAResourcePoolStatus <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAResourcePoolStatus&#34;
+
+<span id="DRASchedulerFilterTimeout" data-kind="constant">	<span class="comment">// owner: @pohly</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4381">http://kep.k8s.io/4381</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables aborting the per-node Filter operation in the scheduler after</span>
+	<span class="comment">// a certain time (10 seconds by default, configurable in the DynamicResources</span>
+	<span class="comment">// scheduler plugin configuration).</span>
+	DRASchedulerFilterTimeout <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRASchedulerFilterTimeout&#34;
+
+<span id="DRAWorkloadResourceClaims" data-kind="constant">	<span class="comment">// owner: @nojnhuh</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5729">https://kep.k8s.io/5729</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for reserving and replicating templated ResourceClaims for an entire PodGroup.</span>
+	DRAWorkloadResourceClaims <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DRAWorkloadResourceClaims&#34;
+
+<span id="DeploymentReplicaSetTerminatingReplicas" data-kind="constant">	<span class="comment">// owner: @atiratree</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/3973">http://kep.k8s.io/3973</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Deployments and replica sets can now also track terminating pods via .status.terminatingReplicas.</span>
+	DeploymentReplicaSetTerminatingReplicas <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DeploymentReplicaSetTerminatingReplicas&#34;
+
+<span id="DisableAllocatorDualWrite" data-kind="constant">	<span class="comment">// owner: @aojea</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// The apiservers with the MultiCIDRServiceAllocator feature enable, in order to support live migration from the old bitmap ClusterIP</span>
+	<span class="comment">// allocators to the new IPAddress allocators introduced by the MultiCIDRServiceAllocator feature, performs a dual-write on</span>
+	<span class="comment">// both allocators. This feature gate disables the dual write on the new Cluster IP allocators.</span>
+	DisableAllocatorDualWrite <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DisableAllocatorDualWrite&#34;
+
+<span id="DisableCPUQuotaWithExclusiveCPUs" data-kind="constant">	<span class="comment">// owner: @ffromani</span>
+</span>	<span class="comment">// beta: v1.33</span>
+	<span class="comment">//</span>
+	<span class="comment">// Disables CPU Quota for containers which have exclusive CPUs allocated.</span>
+	<span class="comment">// Disables pod-Level CPU Quota for pods containing at least one container with exclusive CPUs allocated</span>
+	<span class="comment">// Exclusive CPUs for a container (init, application, sidecar) are allocated when:</span>
+	<span class="comment">// (1) cpumanager policy is static,</span>
+	<span class="comment">// (2) the pod has QoS Guaranteed,</span>
+	<span class="comment">// (3) the container has integer cpu request.</span>
+	<span class="comment">// The expected behavior is that CPU Quota for containers having exclusive CPUs allocated is disabled.</span>
+	<span class="comment">// Because this fix changes a long-established (but incorrect) behavior, users observing</span>
+	<span class="comment">// any regressions can use the DisableCPUQuotaWithExclusiveCPUs feature gate (default on) to</span>
+	<span class="comment">// restore the old behavior. Please file issues if you hit issues and have to use this Feature Gate.</span>
+	<span class="comment">// The Feature Gate will be locked to true and then removed in +2 releases (1.35) if there are no bug reported</span>
+	DisableCPUQuotaWithExclusiveCPUs <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DisableCPUQuotaWithExclusiveCPUs&#34;
+
+<span id="DisableNodeKubeProxyVersion" data-kind="constant">	<span class="comment">// owner: @HirazawaUi</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4004">http://kep.k8s.io/4004</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// DisableNodeKubeProxyVersion disable the status.nodeInfo.kubeProxyVersion field of v1.Node</span>
+	DisableNodeKubeProxyVersion <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DisableNodeKubeProxyVersion&#34;
+
+<span id="DynamicResourceAllocation" data-kind="constant">	<span class="comment">// owner: @pohly</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4381">http://kep.k8s.io/4381</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for resources with custom parameters and a lifecycle</span>
+	<span class="comment">// that is independent of a Pod. Resource allocation is done by the scheduler</span>
+	<span class="comment">// based on &#34;structured parameters&#34;.</span>
+	DynamicResourceAllocation <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;DynamicResourceAllocation&#34;
+
+<span id="EnvFiles" data-kind="constant">	<span class="comment">// owner: @HirazawaUi</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/3721">http://kep.k8s.io/3721</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow containers to read environment variables from a file.</span>
+	<span class="comment">// Environment variables file must be produced by an initContainer and located within an emptyDir volume.</span>
+	<span class="comment">// The kubelet will populate the environment variables in the container</span>
+	<span class="comment">// from the specified file in the emptyDir volume, without mounting the file.</span>
+	EnvFiles <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;EnvFiles&#34;
+
+<span id="EventedPLEG" data-kind="constant">	<span class="comment">// owner: @harche</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/3386">http://kep.k8s.io/3386</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allows using event-driven PLEG (pod lifecycle event generator) through kubelet</span>
+	<span class="comment">// which avoids frequent relisting of containers which helps optimize performance.</span>
+	EventedPLEG <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;EventedPLEG&#34;
+
+<span id="ExecProbeTimeout" data-kind="constant">	<span class="comment">// owner: @andrewsykim @SergeyKanzhelev</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Ensure kubelet respects exec probe timeouts. Feature gate exists in-case existing workloads</span>
+	<span class="comment">// may depend on old behavior where exec probe timeouts were ignored.</span>
+	<span class="comment">// Locked to default, will remove in v1.38. Progress is reflected in KEP #1972 update</span>
+	ExecProbeTimeout <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ExecProbeTimeout&#34;
+
+<span id="ExtendWebSocketsToKubelet" data-kind="constant">	<span class="comment">// owner: @seans3</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4006">http://kep.k8s.io/4006</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the API server to proxy websockets to the kubelet for exec/attach</span>
+	<span class="comment">// if the kubelet has advertised that it supports them.</span>
+	ExtendWebSocketsToKubelet <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ExtendWebSocketsToKubelet&#34;
+
+<span id="ExternalServiceAccountTokenSigner" data-kind="constant">	<span class="comment">// owner: @HarshalNeelkamal</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables external service account JWT signing and key management.</span>
+	<span class="comment">// If enabled, it allows passing --service-account-signing-endpoint flag to configure external signer.</span>
+	ExternalServiceAccountTokenSigner <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ExternalServiceAccountTokenSigner&#34;
+
+<span id="GangScheduling" data-kind="constant">	<span class="comment">// owner: @erictune @wojtek-t</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables support for gang scheduling in kube-scheduler.</span>
+	GangScheduling <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;GangScheduling&#34;
+
+<span id="GenericWorkload" data-kind="constant">	<span class="comment">// owner: @erictune @wojtek-t</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables support for generic Workload API.</span>
+	GenericWorkload <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;GenericWorkload&#34;
+
+<span id="GitRepoVolumeDriver" data-kind="constant">	<span class="comment">// owner: @vinayakankugoyal @thockin</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Controls if the gitRepo volume plugin is supported or not.</span>
+	<span class="comment">// KEP #5040 disables the gitRepo volume plugin by default starting v1.33,</span>
+	<span class="comment">// this provides a way for users to override it.</span>
+	GitRepoVolumeDriver <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;GitRepoVolumeDriver&#34;
+
+<span id="GracefulNodeShutdown" data-kind="constant">	<span class="comment">// owner: @bobbypage</span>
+</span>	<span class="comment">// Adds support for kubelet to detect node shutdown and gracefully terminate pods prior to the node being shutdown.</span>
+	GracefulNodeShutdown <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;GracefulNodeShutdown&#34;
+
+<span id="GracefulNodeShutdownBasedOnPodPriority" data-kind="constant">	<span class="comment">// owner: @wzshiming</span>
+</span>	<span class="comment">// Make the kubelet use shutdown configuration based on pod priority values for graceful shutdown.</span>
+	GracefulNodeShutdownBasedOnPodPriority <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;GracefulNodeShutdownBasedOnPodPriority&#34;
+
+<span id="HPAConfigurableTolerance" data-kind="constant">	<span class="comment">// owner: @jm-franc</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4951">https://kep.k8s.io/4951</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support of configurable HPA scale-up and scale-down tolerances.</span>
+	HPAConfigurableTolerance <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;HPAConfigurableTolerance&#34;
+
+<span id="HPAScaleToZero" data-kind="constant">	<span class="comment">// owner: @johanneswuerbach</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/2021">https://kep.k8s.io/2021</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support of HPA scaling to zero pods when an object or custom metric is configured.</span>
+	HPAScaleToZero <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;HPAScaleToZero&#34;
+
+<span id="HostnameOverride" data-kind="constant">	<span class="comment">// owner: @HirazawaUi</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4762">https://kep.k8s.io/4762</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allows setting any FQDN as the pod&#39;s hostname</span>
+	HostnameOverride <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;HostnameOverride&#34;
+
+<span id="ImageMaximumGCAge" data-kind="constant">	<span class="comment">// owner: @haircommander</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4210">http://kep.k8s.io/4210</a></span>
+	<span class="comment">// ImageMaximumGCAge enables the Kubelet configuration field of the same name, allowing an admin</span>
+	<span class="comment">// to specify the age after which an image will be garbage collected.</span>
+	ImageMaximumGCAge <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ImageMaximumGCAge&#34;
+
+<span id="ImageVolume" data-kind="constant">	<span class="comment">// owner: @saschagrunert</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4639">https://kep.k8s.io/4639</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the image volume source.</span>
+	ImageVolume <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ImageVolume&#34;
+
+<span id="ImageVolumeWithDigest" data-kind="constant">	<span class="comment">// owner: @iholder101</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4639">https://kep.k8s.io/4639</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables adding the ImageVolume&#39;s digest to the pod&#39;s status.</span>
+	ImageVolumeWithDigest <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ImageVolumeWithDigest&#34;
+
+<span id="InPlacePodLevelResourcesVerticalScaling" data-kind="constant">	<span class="comment">// owner: @ndixita</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5419">https://kep.k8s.io/5419</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables specifying resources at pod-level.</span>
+	InPlacePodLevelResourcesVerticalScaling <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;InPlacePodLevelResourcesVerticalScaling&#34;
+
+<span id="InPlacePodVerticalScaling" data-kind="constant">	<span class="comment">// owner: @vinaykul,@tallclair</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/1287">http://kep.k8s.io/1287</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables In-Place Pod Vertical Scaling</span>
+	InPlacePodVerticalScaling <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;InPlacePodVerticalScaling&#34;
+
+<span id="InPlacePodVerticalScalingExclusiveCPUs" data-kind="constant">	<span class="comment">// owner: @tallclair @esotsal</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allow resource resize for containers in Guaranteed pods with integer CPU requests ( default false ).</span>
+	<span class="comment">// Applies only in nodes with InPlacePodVerticalScaling and CPU Manager features enabled, and</span>
+	<span class="comment">// CPU Manager Static Policy option set.</span>
+	InPlacePodVerticalScalingExclusiveCPUs <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;InPlacePodVerticalScalingExclusiveCPUs&#34;
+
+<span id="InPlacePodVerticalScalingExclusiveMemory" data-kind="constant">	<span class="comment">// owner: @tallclair @pkrishn</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allow memory resize for containers in Guaranteed pods (default false) when Memory Manager Policy is set to Static.</span>
+	<span class="comment">// Applies only in nodes with InPlacePodVerticalScaling and Memory Manager features enabled.</span>
+	InPlacePodVerticalScalingExclusiveMemory <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;InPlacePodVerticalScalingExclusiveMemory&#34;
+
+<span id="InPlacePodVerticalScalingInitContainers" data-kind="constant">	<span class="comment">// owner: @natasha41575</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allow in-place pod resize of running non-sidecar init containers.</span>
+	InPlacePodVerticalScalingInitContainers <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;InPlacePodVerticalScalingInitContainers&#34;
+
+<span id="JobBackoffLimitPerIndex" data-kind="constant">	<span class="comment">// owner: @mimowo</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3850">https://kep.k8s.io/3850</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allows users to specify counting of failed pods per index.</span>
+	JobBackoffLimitPerIndex <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;JobBackoffLimitPerIndex&#34;
+
+<span id="JobManagedBy" data-kind="constant">	<span class="comment">// owner: @mimowo</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4368">https://kep.k8s.io/4368</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allows to delegate reconciliation of a Job object to an external controller.</span>
+	JobManagedBy <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;JobManagedBy&#34;
+
+<span id="JobPodReplacementPolicy" data-kind="constant">	<span class="comment">// owner: @kannon92</span>
+</span>	<span class="comment">// kep : <a href="https://kep.k8s.io/3939">https://kep.k8s.io/3939</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow users to specify recreating pods of a job only when</span>
+	<span class="comment">// pods have fully terminated.</span>
+	JobPodReplacementPolicy <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;JobPodReplacementPolicy&#34;
+
+<span id="JobSuccessPolicy" data-kind="constant">	<span class="comment">// owner: @tenzen-y</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3998">https://kep.k8s.io/3998</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow users to specify when a Job can be declared as succeeded</span>
+	<span class="comment">// based on the set of succeeded pods.</span>
+	JobSuccessPolicy <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;JobSuccessPolicy&#34;
+
+<span id="KubeletCgroupDriverFromCRI" data-kind="constant">	<span class="comment">// owner: @marquiz</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4033">http://kep.k8s.io/4033</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable detection of the kubelet cgroup driver configuration option from</span>
+	<span class="comment">// the CRI.  The CRI runtime also needs to support this feature in which</span>
+	<span class="comment">// case the kubelet will ignore the cgroupDriver (--cgroup-driver)</span>
+	<span class="comment">// configuration option. If runtime doesn&#39;t support it, the kubelet will</span>
+	<span class="comment">// fallback to using it&#39;s cgroupDriver option.</span>
+	KubeletCgroupDriverFromCRI <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletCgroupDriverFromCRI&#34;
+
+<span id="KubeletCrashLoopBackOffMax" data-kind="constant">	<span class="comment">// owner: @lauralorenz @hankfreund</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5593">https://kep.k8s.io/5593</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for configurable per-node backoff maximums for restarting</span>
+	<span class="comment">// containers (aka containers in CrashLoopBackOff)</span>
+	KubeletCrashLoopBackOffMax <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletCrashLoopBackOffMax&#34;
+
+<span id="KubeletEnsureSecretPulledImages" data-kind="constant">	<span class="comment">// owner: @stlaz</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/2535">https://kep.k8s.io/2535</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables tracking credentials for image pulls in order to authorize image</span>
+	<span class="comment">// access for different tenants.</span>
+	KubeletEnsureSecretPulledImages <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletEnsureSecretPulledImages&#34;
+
+<span id="KubeletFineGrainedAuthz" data-kind="constant">	<span class="comment">// owner: @vinayakankugoyal</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/2862">http://kep.k8s.io/2862</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable fine-grained kubelet API authorization for webhook based</span>
+	<span class="comment">// authorization.</span>
+	KubeletFineGrainedAuthz <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletFineGrainedAuthz&#34;
+
+<span id="KubeletInUserNamespace" data-kind="constant">	<span class="comment">// owner: @AkihiroSuda</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables support for running kubelet in a user namespace.</span>
+	<span class="comment">// The user namespace has to be created before running kubelet.</span>
+	<span class="comment">// All the node components such as CRI need to be running in the same user namespace.</span>
+	KubeletInUserNamespace <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletInUserNamespace&#34;
+
+<span id="KubeletPSI" data-kind="constant">	<span class="comment">// KubeletPSI enables Kubelet to surface PSI metrics</span>
+</span>	<span class="comment">// owner: @roycaihw</span>
+	<span class="comment">// kep: <a href="https://kep.k8s.io/4205">https://kep.k8s.io/4205</a></span>
+	KubeletPSI <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletPSI&#34;
+
+<span id="KubeletPodResourcesDynamicResources" data-kind="constant">	<span class="comment">// owner: @moshe010</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enable POD resources API to return resources allocated by Dynamic Resource Allocation</span>
+	KubeletPodResourcesDynamicResources <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletPodResourcesDynamicResources&#34;
+
+<span id="KubeletPodResourcesGet" data-kind="constant">	<span class="comment">// owner: @moshe010</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enable POD resources API with Get method</span>
+	KubeletPodResourcesGet <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletPodResourcesGet&#34;
+
+<span id="KubeletPodResourcesListUseActivePods" data-kind="constant">	<span class="comment">// owner: @ffromani</span>
+</span>	<span class="comment">// Deprecated: v1.34</span>
+	<span class="comment">//</span>
+	<span class="comment">// issue: <a href="https://github.com/kubernetes/kubernetes/issues/119423">https://github.com/kubernetes/kubernetes/issues/119423</a></span>
+	<span class="comment">// Disables restricted output for the podresources API list endpoint.</span>
+	<span class="comment">// &#34;Restricted&#34; output only includes the pods which are actually running and thus they</span>
+	<span class="comment">// hold resources. Turns out this was originally the intended behavior, see:</span>
+	<span class="comment">// <a href="https://github.com/kubernetes/kubernetes/pull/79409#issuecomment-505975671">https://github.com/kubernetes/kubernetes/pull/79409#issuecomment-505975671</a></span>
+	<span class="comment">// This behavior was lost over time and interaction with memory manager creates</span>
+	<span class="comment">// an unfixable bug because the endpoint returns spurious stale information the clients</span>
+	<span class="comment">// cannot filter out, because the API doesn&#39;t provide enough context. See:</span>
+	<span class="comment">// <a href="https://github.com/kubernetes/kubernetes/issues/132020">https://github.com/kubernetes/kubernetes/issues/132020</a></span>
+	<span class="comment">// The endpoint has returning extra information for long time, but that information</span>
+	<span class="comment">// is also useless for the purpose of this API. Nevertheless, we are changing a long-established</span>
+	<span class="comment">// albeit buggy behavior, so users observing any regressions can use the</span>
+	<span class="comment">// KubeletPodResourcesListUseActivePods/ feature gate (default on) to restore the old behavior.</span>
+	<span class="comment">// Please file issues if you hit issues and have to use this Feature Gate.</span>
+	<span class="comment">// The Feature Gate will be locked to true in +4 releases (1.38) and then removed (1.39)</span>
+	<span class="comment">// if there are no bug reported.</span>
+	KubeletPodResourcesListUseActivePods <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletPodResourcesListUseActivePods&#34;
+
+<span id="KubeletRegistrationGetOnExistsOnly" data-kind="constant">	<span class="comment">// owner: @hoskeri</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Restores previous behavior where Kubelet fails self registration if node create returns 403 Forbidden.</span>
+	KubeletRegistrationGetOnExistsOnly <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletRegistrationGetOnExistsOnly&#34;
+
+<span id="KubeletSeparateDiskGC" data-kind="constant">	<span class="comment">// owner: @kannon92</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4191">https://kep.k8s.io/4191</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// The split image filesystem feature enables kubelet to perform garbage collection</span>
+	<span class="comment">// of images (read-only layers) and/or containers (writeable layers) deployed on</span>
+	<span class="comment">// separate filesystems.</span>
+	KubeletSeparateDiskGC <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletSeparateDiskGC&#34;
+
+<span id="KubeletServiceAccountTokenForCredentialProviders" data-kind="constant">	<span class="comment">// owner: @aramase</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4412">http://kep.k8s.io/4412</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable kubelet to send the service account token bound to the pod for which the image</span>
+	<span class="comment">// is being pulled to the credential provider plugin.</span>
+	KubeletServiceAccountTokenForCredentialProviders <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletServiceAccountTokenForCredentialProviders&#34;
+
+<span id="KubeletTracing" data-kind="constant">	<span class="comment">// owner: @sallyom</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/2832">https://kep.k8s.io/2832</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Add support for distributed tracing in the kubelet</span>
+	KubeletTracing <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;KubeletTracing&#34;
+
+<span id="LocalStorageCapacityIsolationFSQuotaMonitoring" data-kind="constant">	<span class="comment">// owner: @RobertKrawitz</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allow use of filesystems for ephemeral storage monitoring.</span>
+	<span class="comment">// Only applies if LocalStorageCapacityIsolation is set.</span>
+	<span class="comment">// Relies on UserNamespacesSupport feature, and thus should follow it when setting defaults.</span>
+	LocalStorageCapacityIsolationFSQuotaMonitoring <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;LocalStorageCapacityIsolationFSQuotaMonitoring&#34;
+
+<span id="LogarithmicScaleDown" data-kind="constant">	<span class="comment">// owner: @damemi</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables scaling down replicas via logarithmic comparison of creation/ready timestamps</span>
+	LogarithmicScaleDown <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;LogarithmicScaleDown&#34;
+
+<span id="MatchLabelKeysInPodAffinity" data-kind="constant">	<span class="comment">// owner: @sanposhiho</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3633">https://kep.k8s.io/3633</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the MatchLabelKeys and MismatchLabelKeys in PodAffinity and PodAntiAffinity.</span>
+	MatchLabelKeysInPodAffinity <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MatchLabelKeysInPodAffinity&#34;
+
+<span id="MatchLabelKeysInPodTopologySpread" data-kind="constant">	<span class="comment">// owner: @denkensk</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3243">https://kep.k8s.io/3243</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable MatchLabelKeys in PodTopologySpread.</span>
+	MatchLabelKeysInPodTopologySpread <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MatchLabelKeysInPodTopologySpread&#34;
+
+<span id="MatchLabelKeysInPodTopologySpreadSelectorMerge" data-kind="constant">	<span class="comment">// owner: @mochizuki875</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3243">https://kep.k8s.io/3243</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable merging key-value labels into LabelSelector corresponding to MatchLabelKeys in PodTopologySpread.</span>
+	MatchLabelKeysInPodTopologySpreadSelectorMerge <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MatchLabelKeysInPodTopologySpreadSelectorMerge&#34;
+
+<span id="MaxUnavailableStatefulSet" data-kind="constant">	<span class="comment">// owner: @krmayankk</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/961">https://kep.k8s.io/961</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables maxUnavailable for StatefulSet</span>
+	MaxUnavailableStatefulSet <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MaxUnavailableStatefulSet&#34;
+
+<span id="MemoryQoS" data-kind="constant">	<span class="comment">// owner: @xiaoxubeii</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/2570">https://kep.k8s.io/2570</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables kubelet to support memory QoS with cgroups v2.</span>
+	MemoryQoS <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MemoryQoS&#34;
+
+<span id="MultiCIDRServiceAllocator" data-kind="constant">	<span class="comment">// owner: @aojea</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/1880">https://kep.k8s.io/1880</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the dynamic configuration of Service IP ranges</span>
+	MultiCIDRServiceAllocator <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MultiCIDRServiceAllocator&#34;
+
+<span id="MutableCSINodeAllocatableCount" data-kind="constant">	<span class="comment">// owner: torredil</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4876">https://kep.k8s.io/4876</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Makes CSINode.Spec.Drivers[*].Allocatable.Count mutable, allowing CSI drivers to</span>
+	<span class="comment">// update the number of volumes that can be allocated on a node</span>
+	MutableCSINodeAllocatableCount <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MutableCSINodeAllocatableCount&#34;
+
+<span id="MutablePVNodeAffinity" data-kind="constant">	<span class="comment">// owner: huww98</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5381">https://kep.k8s.io/5381</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Makes PersistentVolume.Spec.NodeAffinity mutable, allowing CSI drivers to</span>
+	<span class="comment">// update the topology info when the data is migrated</span>
+	MutablePVNodeAffinity <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MutablePVNodeAffinity&#34;
+
+<span id="MutablePodResourcesForSuspendedJobs" data-kind="constant">	<span class="comment">// owner: @kannon92</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5440">https://kep.k8s.io/5440</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables mutable pod resources for suspended Jobs, regardless of whether they have started before.</span>
+	MutablePodResourcesForSuspendedJobs <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MutablePodResourcesForSuspendedJobs&#34;
+
+<span id="MutableSchedulingDirectivesForSuspendedJobs" data-kind="constant">	<span class="comment">// owner: @mimowo</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5440">https://kep.k8s.io/5440</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables mutable scheduling directives for suspended Jobs, regardless of whether they have started before.</span>
+	MutableSchedulingDirectivesForSuspendedJobs <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;MutableSchedulingDirectivesForSuspendedJobs&#34;
+
+<span id="NFTablesProxyMode" data-kind="constant">	<span class="comment">// owner: @danwinship</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3866">https://kep.k8s.io/3866</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allows running kube-proxy with `--mode nftables`.</span>
+	NFTablesProxyMode <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;NFTablesProxyMode&#34;
+
+<span id="NodeDeclaredFeatures" data-kind="constant">	<span class="comment">// owner: @pravk03, @tallclair</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5328">https://kep.k8s.io/5328</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the DeclaredFeatures API in the NodeStatus, populated by the Kubelet. Also enables the scheduler filter using DeclaredFeatures.</span>
+	NodeDeclaredFeatures <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;NodeDeclaredFeatures&#34;
+
+<span id="NodeInclusionPolicyInPodTopologySpread" data-kind="constant">	<span class="comment">// owner: @kerthcet</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3094">https://kep.k8s.io/3094</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow users to specify whether to take nodeAffinity/nodeTaint into consideration when</span>
+	<span class="comment">// calculating pod topology spread skew.</span>
+	NodeInclusionPolicyInPodTopologySpread <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;NodeInclusionPolicyInPodTopologySpread&#34;
+
+<span id="NodeLogQuery" data-kind="constant">	<span class="comment">// owner: @aravindhp @LorbusChris</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/2271">http://kep.k8s.io/2271</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables querying logs of node services using the /logs endpoint. Enabling this feature has security implications.</span>
+	<span class="comment">// The recommendation is to enable it on a need basis for debugging purposes and disabling otherwise.</span>
+	NodeLogQuery <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;NodeLogQuery&#34;
+
+<span id="NodeSwap" data-kind="constant">	<span class="comment">// owner: @iholder101 @kannon92</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/2400">https://kep.k8s.io/2400</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Permits kubelet to run with swap enabled.</span>
+	NodeSwap <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;NodeSwap&#34;
+
+<span id="NominatedNodeNameForExpectation" data-kind="constant">	<span class="comment">// owner: @sanposhiho, @wojtek-t</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5278">https://kep.k8s.io/5278</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Extends NominatedNodeName field to express expected pod placement, allowing</span>
+	<span class="comment">// both the scheduler and external components (e.g., Cluster Autoscaler, Karpenter, Kueue)</span>
+	<span class="comment">// to share pod placement intentions. This enables better coordination between</span>
+	<span class="comment">// components, prevents inappropriate node scale-downs, and helps the scheduler</span>
+	<span class="comment">// resume work after restarts.</span>
+	NominatedNodeNameForExpectation <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;NominatedNodeNameForExpectation&#34;
+
+<span id="OpportunisticBatching" data-kind="constant">	<span class="comment">// owner: @bwsalmon</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5598">https://kep.k8s.io/5598</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables opportunistic batching in the scheduler.</span>
+	OpportunisticBatching <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;OpportunisticBatching&#34;
+
+<span id="OrderedNamespaceDeletion" data-kind="constant">	<span class="comment">// owner: @cici37</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5080">https://kep.k8s.io/5080</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables ordered namespace deletion.</span>
+	OrderedNamespaceDeletion <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;OrderedNamespaceDeletion&#34;
+
+<span id="PLEGOnDemandRelist" data-kind="constant">	<span class="comment">// owner: @tallclair</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables relisting individual pods on-demand.</span>
+	PLEGOnDemandRelist <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PLEGOnDemandRelist&#34;
+
+<span id="PersistentVolumeClaimUnusedSinceTime" data-kind="constant">	<span class="comment">// owner: @ArvindParekh</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5541">https://kep.k8s.io/5541</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Adds an Unused condition to PersistentVolumeClaim status that indicates when the PVC was last used by a pod.</span>
+	PersistentVolumeClaimUnusedSinceTime <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PersistentVolumeClaimUnusedSinceTime&#34;
+
+<span id="PodAndContainerStatsFromCRI" data-kind="constant">	<span class="comment">// owner: @haircommander</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/2364">https://kep.k8s.io/2364</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Configures the Kubelet to use the CRI to populate pod and container stats, instead of supplimenting with stats from cAdvisor.</span>
+	<span class="comment">// Requires the CRI implementation supports supplying the required stats.</span>
+	PodAndContainerStatsFromCRI <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodAndContainerStatsFromCRI&#34;
+
+<span id="PodCertificateRequest" data-kind="constant">	<span class="comment">// owner: @ahmedtd</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4317">https://kep.k8s.io/4317</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable PodCertificateRequest objects and podCertificate projected volume sources.</span>
+	PodCertificateRequest <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodCertificateRequest&#34;
+
+<span id="PodDeletionCost" data-kind="constant">	<span class="comment">// owner: @ahg-g</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables controlling pod ranking on replicaset scale-down.</span>
+	PodDeletionCost <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodDeletionCost&#34;
+
+<span id="PodLevelResourceManagers" data-kind="constant">	<span class="comment">// owner: @KevinTMtz</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5526">https://kep.k8s.io/5526</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// PodLevelResourceManagers enables pod-level resource management in the Topology, CPU, and Memory managers.</span>
+	<span class="comment">// This feature depends on the PodLevelResources feature.</span>
+	PodLevelResourceManagers <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodLevelResourceManagers&#34;
+
+<span id="PodLevelResources" data-kind="constant">	<span class="comment">// owner: @ndixita</span>
+</span>	<span class="comment">// key: <a href="https://kep.k8s.io/2837">https://kep.k8s.io/2837</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables specifying resources at pod-level.</span>
+	PodLevelResources <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodLevelResources&#34;
+
+<span id="PodLifecycleSleepAction" data-kind="constant">	<span class="comment">// owner: @AxeZhan</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/3960">http://kep.k8s.io/3960</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables SleepAction in container lifecycle hooks</span>
+	PodLifecycleSleepAction <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodLifecycleSleepAction&#34;
+
+<span id="PodLifecycleSleepActionAllowZero" data-kind="constant">	<span class="comment">// owner: @sreeram-venkitesh</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4818">http://kep.k8s.io/4818</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allows zero value for sleep duration in SleepAction in container lifecycle hooks</span>
+	PodLifecycleSleepActionAllowZero <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodLifecycleSleepActionAllowZero&#34;
+
+<span id="PodLogsQuerySplitStreams" data-kind="constant">	<span class="comment">// owner: @knight42</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3288">https://kep.k8s.io/3288</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables only stdout or stderr of the container to be retrievd.</span>
+	PodLogsQuerySplitStreams <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodLogsQuerySplitStreams&#34;
+
+<span id="PodObservedGenerationTracking" data-kind="constant">	<span class="comment">// owner: @natasha41575</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5067">http://kep.k8s.io/5067</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the pod to report status.ObservedGeneration to reflect the generation of the last observed podspec.</span>
+	PodObservedGenerationTracking <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodObservedGenerationTracking&#34;
+
+<span id="PodReadyToStartContainersCondition" data-kind="constant">	<span class="comment">// owner: @ddebroy, @kannon92</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables reporting of PodReadyToStartContainersCondition condition in pod status after pod</span>
+	<span class="comment">// sandbox creation and network configuration completes successfully</span>
+	PodReadyToStartContainersCondition <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodReadyToStartContainersCondition&#34;
+
+<span id="PodSchedulingReadiness" data-kind="constant">	<span class="comment">// owner: @Huang-Wei</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3521">https://kep.k8s.io/3521</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable users to specify when a Pod is ready for scheduling.</span>
+	PodSchedulingReadiness <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodSchedulingReadiness&#34;
+
+<span id="PodTopologyLabelsAdmission" data-kind="constant">	<span class="comment">// owner: @munnerz</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4742">https://kep.k8s.io/4742</a></span>
+	<span class="comment">// alpha: v1.33</span>
+	<span class="comment">// beta: v1.35</span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the PodTopologyLabelsAdmission admission plugin that mutates `pod/binding`</span>
+	<span class="comment">// requests by copying the `topology.kubernetes.io/{zone,region}` labels from the assigned</span>
+	<span class="comment">// Node object (in the Binding being admitted) onto the Binding</span>
+	<span class="comment">// so that it can be persisted onto the Pod object when the Pod is being scheduled.</span>
+	<span class="comment">// This allows workloads running in pods to understand the topology information of their assigned node.</span>
+	<span class="comment">// Enabling this feature also permits external schedulers to set labels on pods in an atomic</span>
+	<span class="comment">// operation when scheduling a Pod by setting the `metadata.labels` field on the submitted Binding,</span>
+	<span class="comment">// similar to how `metadata.annotations` behaves.</span>
+	PodTopologyLabelsAdmission <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodTopologyLabelsAdmission&#34;
+
+<span id="PodsAPI" data-kind="constant">	<span class="comment">// owner: @briansonnenberg</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4188">https://kep.k8s.io/4188</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the PodsAPI feature to expose pod information via a gRPC API on the kubelet.</span>
+	PodsAPI <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PodsAPI&#34;
+
+<span id="PortForwardWebsockets" data-kind="constant">	<span class="comment">// owner: @seans3</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4006">http://kep.k8s.io/4006</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables PortForward to be proxied with a websocket client</span>
+	PortForwardWebsockets <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PortForwardWebsockets&#34;
+
+<span id="PreferSameTrafficDistribution" data-kind="constant">	<span class="comment">// owner: @danwinship</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3015">https://kep.k8s.io/3015</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables PreferSameZone and PreferSameNode values for trafficDistribution</span>
+	PreferSameTrafficDistribution <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PreferSameTrafficDistribution&#34;
+
+<span id="PreventStaticPodAPIReferences" data-kind="constant">	<span class="comment">// owner: @sreeram-venkitesh</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Denies pod admission if static pods reference other API objects.</span>
+	PreventStaticPodAPIReferences <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;PreventStaticPodAPIReferences&#34;
+
+<span id="ProcMountType" data-kind="constant">	<span class="comment">// owner: @jessfraz</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables control over ProcMountType for containers.</span>
+	ProcMountType <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ProcMountType&#34;
+
+<span id="QOSReserved" data-kind="constant">	<span class="comment">// owner: @sjenning</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allows resource reservations at the QoS level preventing pods at lower QoS levels from</span>
+	<span class="comment">// bursting into resources requested at higher QoS levels (memory only for now)</span>
+	QOSReserved <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;QOSReserved&#34;
+
+<span id="RecoverVolumeExpansionFailure" data-kind="constant">	<span class="comment">// owner: @gnufied</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/1790">https://kep.k8s.io/1790</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow users to recover from volume expansion failure</span>
+	RecoverVolumeExpansionFailure <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;RecoverVolumeExpansionFailure&#34;
+
+<span id="RecursiveReadOnlyMounts" data-kind="constant">	<span class="comment">// owner: @AkihiroSuda</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3857">https://kep.k8s.io/3857</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allows recursive read-only mounts.</span>
+	RecursiveReadOnlyMounts <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;RecursiveReadOnlyMounts&#34;
+
+<span id="ReduceDefaultCrashLoopBackOffDecay" data-kind="constant">	<span class="comment">// owner: @lauralorenz</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4603">https://kep.k8s.io/4603</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for a lower internal cluster-wide backoff maximum for restarting</span>
+	<span class="comment">// containers (aka containers in CrashLoopBackOff)</span>
+	ReduceDefaultCrashLoopBackOffDecay <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ReduceDefaultCrashLoopBackOffDecay&#34;
+
+<span id="RelaxedDNSSearchValidation" data-kind="constant">	<span class="comment">// owner: @adrianmoisey</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4427">https://kep.k8s.io/4427</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Relaxed DNS search string validation.</span>
+	RelaxedDNSSearchValidation <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;RelaxedDNSSearchValidation&#34;
+
+<span id="RelaxedEnvironmentVariableValidation" data-kind="constant">	<span class="comment">// owner: @HirazawaUi</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4369">https://kep.k8s.io/4369</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow almost all printable ASCII characters in environment variables</span>
+	RelaxedEnvironmentVariableValidation <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;RelaxedEnvironmentVariableValidation&#34;
+
+<span id="RelaxedServiceNameValidation" data-kind="constant">	<span class="comment">// owner: @adrianmoisey</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5311">https://kep.k8s.io/5311</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Relaxed DNS search string validation.</span>
+	RelaxedServiceNameValidation <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;RelaxedServiceNameValidation&#34;
+
+<span id="ReloadKubeletClientCAFile" data-kind="constant">	<span class="comment">// owner: @harshaln</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables running kubelet in a configuration that monitors and loads ClientCA from file paths</span>
+	ReloadKubeletClientCAFile = &#34;ReloadKubeletClientCAFile&#34;
+
+<span id="ReloadKubeletServerCertificateFile" data-kind="constant">	<span class="comment">// owner: @zhangweikop</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enable kubelet tls server to update certificate if the specified certificate files are changed.</span>
+	<span class="comment">// This feature is useful when specifying tlsCertFile &amp; tlsPrivateKeyFile in kubelet Configuration.</span>
+	<span class="comment">// No effect for other cases such as using serverTLSbootstap.</span>
+	ReloadKubeletServerCertificateFile <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ReloadKubeletServerCertificateFile&#34;
+
+<span id="ResourceHealthStatus" data-kind="constant">	<span class="comment">// owner: @SergeyKanzhelev</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4680">https://kep.k8s.io/4680</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Adds the AllocatedResourcesStatus to the container status.</span>
+	ResourceHealthStatus <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ResourceHealthStatus&#34;
+
+<span id="ResourceHealthStatusMessage" data-kind="constant">	<span class="comment">// owner: @SergeyKanzhelev</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4680">https://kep.k8s.io/4680</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Adds a message to the AllocatedResourcesStatus entries.</span>
+	ResourceHealthStatusMessage <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ResourceHealthStatusMessage&#34;
+
+<span id="RestartAllContainersOnContainerExits" data-kind="constant">	<span class="comment">// owner: @yuanwang04</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5532">https://kep.k8s.io/5532</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Restart the pod in-place on the same node.</span>
+	RestartAllContainersOnContainerExits <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;RestartAllContainersOnContainerExits&#34;
+
+<span id="RotateKubeletServerCertificate" data-kind="constant">	<span class="comment">// owner: @mikedanese</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Gets a server certificate for the kubelet from the Certificate Signing</span>
+	<span class="comment">// Request API instead of generating one self signed and auto rotates the</span>
+	<span class="comment">// certificate as expiration approaches.</span>
+	RotateKubeletServerCertificate <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;RotateKubeletServerCertificate&#34;
+
+<span id="RuntimeClassInImageCriAPI" data-kind="constant">	<span class="comment">// owner: @kiashok</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4216">https://kep.k8s.io/4216</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Adds support to pull images based on the runtime class specified.</span>
+	RuntimeClassInImageCriAPI <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;RuntimeClassInImageCriApi&#34;
+
+<span id="SELinuxChangePolicy" data-kind="constant">	<span class="comment">// owner: @jsafrane</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/1710">https://kep.k8s.io/1710</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Speed up container startup by mounting volumes with the correct SELinux label</span>
+	<span class="comment">// instead of changing each file on the volumes recursively.</span>
+	<span class="comment">// Enables the SELinuxChangePolicy field in PodSecurityContext before SELinuxMount featgure gate is enabled.</span>
+	SELinuxChangePolicy <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SELinuxChangePolicy&#34;
+
+<span id="SELinuxMount" data-kind="constant">	<span class="comment">// owner: @jsafrane</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/1710">https://kep.k8s.io/1710</a></span>
+	<span class="comment">// Speed up container startup by mounting volumes with the correct SELinux label</span>
+	<span class="comment">// instead of changing each file on the volumes recursively.</span>
+	SELinuxMount <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SELinuxMount&#34;
+
+<span id="SELinuxMountReadWriteOncePod" data-kind="constant">	<span class="comment">// owner: @jsafrane</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/1710">https://kep.k8s.io/1710</a></span>
+	<span class="comment">// Speed up container startup by mounting volumes with the correct SELinux label</span>
+	<span class="comment">// instead of changing each file on the volumes recursively.</span>
+	<span class="comment">// Initial implementation focused on ReadWriteOncePod volumes.</span>
+	SELinuxMountReadWriteOncePod <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SELinuxMountReadWriteOncePod&#34;
+
+<span id="SchedulerAsyncAPICalls" data-kind="constant">	<span class="comment">// owner: @macsko</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5229">http://kep.k8s.io/5229</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Makes all API calls during scheduling asynchronous, by introducing a new kube-scheduler-wide way of handling such calls.</span>
+	SchedulerAsyncAPICalls <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SchedulerAsyncAPICalls&#34;
+
+<span id="SchedulerAsyncPreemption" data-kind="constant">	<span class="comment">// owner: @sanposhiho</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4832">http://kep.k8s.io/4832</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Running some expensive operation within the scheduler&#39;s preemption asynchronously,</span>
+	<span class="comment">// which improves the scheduling latency when the preemption involves in.</span>
+	SchedulerAsyncPreemption <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SchedulerAsyncPreemption&#34;
+
+<span id="SchedulerPopFromBackoffQ" data-kind="constant">	<span class="comment">// owner: @macsko</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5142">http://kep.k8s.io/5142</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Improves scheduling queue behavior by popping pods from the backoffQ when the activeQ is empty.</span>
+	<span class="comment">// This allows to process potentially schedulable pods ASAP, eliminating a penalty effect of the backoff queue.</span>
+	SchedulerPopFromBackoffQ <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SchedulerPopFromBackoffQ&#34;
+
+<span id="SchedulerQueueingHints" data-kind="constant">	<span class="comment">// owner: @sanposhiho</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4247">http://kep.k8s.io/4247</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the scheduler&#39;s enhancement called QueueingHints,</span>
+	<span class="comment">// which benefits to reduce the useless requeueing.</span>
+	SchedulerQueueingHints <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SchedulerQueueingHints&#34;
+
+<span id="SeparateTaintEvictionController" data-kind="constant">	<span class="comment">// owner: @atosatto @yuanchen8911</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/3902">http://kep.k8s.io/3902</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Decouples Taint Eviction Controller, performing taint-based Pod eviction, from Node Lifecycle Controller.</span>
+	SeparateTaintEvictionController <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SeparateTaintEvictionController&#34;
+
+<span id="ServiceAccountNodeAudienceRestriction" data-kind="constant">	<span class="comment">// owner: @aramase</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4412">https://kep.k8s.io/4412</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// ServiceAccountNodeAudienceRestriction is used to restrict the audience for which the</span>
+	<span class="comment">// kubelet can request a service account token for.</span>
+	ServiceAccountNodeAudienceRestriction <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ServiceAccountNodeAudienceRestriction&#34;
+
+<span id="ServiceAccountTokenJTI" data-kind="constant">	<span class="comment">// owner: @munnerz</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4193">http://kep.k8s.io/4193</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Controls whether JTIs (UUIDs) are embedded into generated service account tokens, and whether these JTIs are</span>
+	<span class="comment">// recorded into the audit log for future requests made by these tokens.</span>
+	ServiceAccountTokenJTI <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ServiceAccountTokenJTI&#34;
+
+<span id="ServiceAccountTokenNodeBinding" data-kind="constant">	<span class="comment">// owner: @munnerz</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4193">http://kep.k8s.io/4193</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Controls whether the apiserver supports binding service account tokens to Node objects.</span>
+	ServiceAccountTokenNodeBinding <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ServiceAccountTokenNodeBinding&#34;
+
+<span id="ServiceAccountTokenNodeBindingValidation" data-kind="constant">	<span class="comment">// owner: @munnerz</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4193">http://kep.k8s.io/4193</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Controls whether the apiserver will validate Node claims in service account tokens.</span>
+	ServiceAccountTokenNodeBindingValidation <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ServiceAccountTokenNodeBindingValidation&#34;
+
+<span id="ServiceAccountTokenPodNodeInfo" data-kind="constant">	<span class="comment">// owner: @munnerz</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4193">http://kep.k8s.io/4193</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Controls whether the apiserver embeds the node name and uid for the associated node when issuing</span>
+	<span class="comment">// service account tokens bound to Pod objects.</span>
+	ServiceAccountTokenPodNodeInfo <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ServiceAccountTokenPodNodeInfo&#34;
+
+<span id="ServiceCIDRStatusFieldWiping" data-kind="constant">	<span class="comment">// owner: @jpbetz</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// When enabled, the apiserver ignores changes to status fields in writes to the ServiceCIDR root resource.</span>
+	ServiceCIDRStatusFieldWiping <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;ServiceCIDRStatusFieldWiping&#34;
+
+<span id="SidecarContainers" data-kind="constant">	<span class="comment">// owner: @gjkim42 @SergeyKanzhelev @matthyx @tzneal</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/753">http://kep.k8s.io/753</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Introduces sidecar containers, a new type of init container that starts</span>
+	<span class="comment">// before other containers but remains running for the full duration of the</span>
+	<span class="comment">// pod&#39;s lifecycle and will not block pod termination.</span>
+	SidecarContainers <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SidecarContainers&#34;
+
+<span id="StaleControllerConsistencyDaemonSet" data-kind="constant">	<span class="comment">// owner: @michaelasp</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5647">http://kep.k8s.io/5647</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Introduces the ability for the DaemonSet controller to be able to read its writes</span>
+	<span class="comment">// prior to running a reconcile on the same object.</span>
+	StaleControllerConsistencyDaemonSet <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StaleControllerConsistencyDaemonSet&#34;
+
+<span id="StaleControllerConsistencyJob" data-kind="constant">	<span class="comment">// owner: @michaelasp</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5647">http://kep.k8s.io/5647</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Introduces the ability for the Job controller to be able to read its writes</span>
+	<span class="comment">// prior to running a reconcile on the same object.</span>
+	StaleControllerConsistencyJob <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StaleControllerConsistencyJob&#34;
+
+<span id="StaleControllerConsistencyReplicaSet" data-kind="constant">	<span class="comment">// owner: @michaelasp</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5647">http://kep.k8s.io/5647</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Introduces the ability for the ReplicaSet controller to be able to read its writes</span>
+	<span class="comment">// prior to running a reconcile on the same object.</span>
+	StaleControllerConsistencyReplicaSet <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StaleControllerConsistencyReplicaSet&#34;
+
+<span id="StaleControllerConsistencyStatefulSet" data-kind="constant">	<span class="comment">// owner: @michaelasp</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/5647">http://kep.k8s.io/5647</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Introduces the ability for the StatefulSet controller to be able to read its writes</span>
+	<span class="comment">// prior to running a reconcile on the same object.</span>
+	StaleControllerConsistencyStatefulSet <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StaleControllerConsistencyStatefulSet&#34;
+
+<span id="StatefulSetSemanticRevisionComparison" data-kind="constant">	<span class="comment">// owner: @liggitt</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Mitigates spurious statefulset rollouts due to controller revision comparison mismatches</span>
+	<span class="comment">// which are not semantically significant (e.g. serialization differences or missing defaulted fields).</span>
+	StatefulSetSemanticRevisionComparison <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StatefulSetSemanticRevisionComparison&#34;
+
+<span id="StorageCapacityScoring" data-kind="constant">	<span class="comment">// owner: @cupnes</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4049">https://kep.k8s.io/4049</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables scoring nodes by available storage capacity with</span>
+	<span class="comment">// StorageCapacityScoring feature gate.</span>
+	StorageCapacityScoring <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StorageCapacityScoring&#34;
+
+<span id="StorageNamespaceIndex" data-kind="constant">	<span class="comment">// owner: @ahutsunshine</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allows namespace indexer for namespace scope resources in apiserver cache to accelerate list operations.</span>
+	<span class="comment">// Superseded by BtreeWatchCache.</span>
+	StorageNamespaceIndex <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StorageNamespaceIndex&#34;
+
+<span id="StorageVersionMigrator" data-kind="constant">	<span class="comment">// owner: @enj, @michaelasp</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4192">https://kep.k8s.io/4192</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for the StorageVersionMigrator controller.</span>
+	StorageVersionMigrator <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StorageVersionMigrator&#34;
+
+<span id="StreamingCollectionEncodingToJSON" data-kind="constant">	<span class="comment">// owner: @serathius</span>
+</span>	<span class="comment">// Allow API server JSON encoder to encode collections item by item, instead of all at once.</span>
+	StreamingCollectionEncodingToJSON <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StreamingCollectionEncodingToJSON&#34;
+
+<span id="StreamingCollectionEncodingToProtobuf" data-kind="constant">	<span class="comment">// owner: serathius</span>
+</span>	<span class="comment">// Allow API server Protobuf encoder to encode collections item by item, instead of all at once.</span>
+	StreamingCollectionEncodingToProtobuf <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StreamingCollectionEncodingToProtobuf&#34;
+
+<span id="StrictIPCIDRValidation" data-kind="constant">	<span class="comment">// owner: @danwinship</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4858">https://kep.k8s.io/4858</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Requires stricter validation of IP addresses and CIDR values in API objects.</span>
+	StrictIPCIDRValidation <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;StrictIPCIDRValidation&#34;
+
+<span id="SupplementalGroupsPolicy" data-kind="constant">	<span class="comment">// owner: @everpeace</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3619">https://kep.k8s.io/3619</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enable SupplementalGroupsPolicy feature in PodSecurityContext</span>
+	SupplementalGroupsPolicy <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;SupplementalGroupsPolicy&#34;
+
+<span id="SystemdWatchdog" data-kind="constant">	<span class="comment">// owner: @zhifei92</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Enables the systemd watchdog for the kubelet. When enabled, the kubelet will</span>
+	<span class="comment">// periodically notify the systemd watchdog to indicate that it is still alive.</span>
+	<span class="comment">// This can help prevent the system from restarting the kubelet if it becomes</span>
+	<span class="comment">// unresponsive. The feature gate is enabled by default, but should only be used</span>
+	<span class="comment">// if the system supports the systemd watchdog feature and has it configured properly.</span>
+	SystemdWatchdog = <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a>(&#34;SystemdWatchdog&#34;)
+
+<span id="TaintTolerationComparisonOperators" data-kind="constant">	<span class="comment">// owner: @helayoty</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5471">https://kep.k8s.io/5471</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables numeric comparison operators (Lt, Gt) for tolerations to match taints with threshold-based values.</span>
+	TaintTolerationComparisonOperators <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;TaintTolerationComparisonOperators&#34;
+
+<span id="TopologyAwareWorkloadScheduling" data-kind="constant">	<span class="comment">// owner: @44past4</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5732">https://kep.k8s.io/5732</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables topology-aware workload scheduling feature in kube-scheduler and related PodGroup API fields.</span>
+	<span class="comment">// When enabled, scheduler will try various placements for a pod group and pick the best one.</span>
+	TopologyAwareWorkloadScheduling <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;TopologyAwareWorkloadScheduling&#34;
+
+<span id="TopologyManagerPolicyAlphaOptions" data-kind="constant">	<span class="comment">// owner: @PiotrProkop</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3545">https://kep.k8s.io/3545</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow fine-tuning of topology manager policies with alpha options.</span>
+	<span class="comment">// This feature gate:</span>
+	<span class="comment">// - will guard *a group* of topology manager options whose quality level is alpha.</span>
+	<span class="comment">// - will never graduate to beta or stable.</span>
+	TopologyManagerPolicyAlphaOptions <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;TopologyManagerPolicyAlphaOptions&#34;
+
+<span id="TopologyManagerPolicyBetaOptions" data-kind="constant">	<span class="comment">// owner: @PiotrProkop</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3545">https://kep.k8s.io/3545</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow fine-tuning of topology manager policies with beta options.</span>
+	<span class="comment">// This feature gate:</span>
+	<span class="comment">// - will guard *a group* of topology manager options whose quality level is beta.</span>
+	<span class="comment">// - is thus *introduced* as beta</span>
+	<span class="comment">// - will never graduate to stable.</span>
+	TopologyManagerPolicyBetaOptions <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;TopologyManagerPolicyBetaOptions&#34;
+
+<span id="TopologyManagerPolicyOptions" data-kind="constant">	<span class="comment">// owner: @PiotrProkop</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3545">https://kep.k8s.io/3545</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow the usage of options to fine-tune the topology manager policies.</span>
+	TopologyManagerPolicyOptions <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;TopologyManagerPolicyOptions&#34;
+
+<span id="TranslateStreamCloseWebsocketRequests" data-kind="constant">	<span class="comment">// owner: @seans3</span>
+</span>	<span class="comment">// kep: <a href="http://kep.k8s.io/4006">http://kep.k8s.io/4006</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables StreamTranslator proxy to handle WebSockets upgrade requests for the</span>
+	<span class="comment">// version of the RemoteCommand subprotocol that supports the &#34;close&#34; signal.</span>
+	TranslateStreamCloseWebsocketRequests <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;TranslateStreamCloseWebsocketRequests&#34;
+
+<span id="UserNamespacesHostNetworkSupport" data-kind="constant">	<span class="comment">// owner: @HirazawaUi</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5607">https://kep.k8s.io/5607</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Allow hostNetwork pods to use user namespaces</span>
+	UserNamespacesHostNetworkSupport <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;UserNamespacesHostNetworkSupport&#34;
+
+<span id="UserNamespacesSupport" data-kind="constant">	<span class="comment">// owner: @rata, @giuseppe</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/127">https://kep.k8s.io/127</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables user namespace support for stateless pods.</span>
+	UserNamespacesSupport <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;UserNamespacesSupport&#34;
+
+<span id="VolumeAttributesClass" data-kind="constant">	<span class="comment">// owner: @mattcarry, @sunnylovestiramisu</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3751">https://kep.k8s.io/3751</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables user specified volume attributes for persistent volumes, like iops and throughput.</span>
+	VolumeAttributesClass <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;VolumeAttributesClass&#34;
+
+<span id="VolumeLimitScaling" data-kind="constant">	<span class="comment">// owner: @gnufied</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5030">https://kep.k8s.io/5030</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables volume limit scaling for CSI drivers. This allows scheduler to</span>
+	<span class="comment">// co-ordinate better with cluster-autoscaler for storage limits.</span>
+	VolumeLimitScaling <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;VolumeLimitScaling&#34;
+
+<span id="WinDSR" data-kind="constant">	<span class="comment">// owner: @ksubrmnn</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allows kube-proxy to create DSR loadbalancers for Windows</span>
+	WinDSR <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;WinDSR&#34;
+
+<span id="WinOverlay" data-kind="constant">	<span class="comment">// owner: @ksubrmnn</span>
+</span>	<span class="comment">//</span>
+	<span class="comment">// Allows kube-proxy to run in Overlay mode for Windows</span>
+	WinOverlay <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;WinOverlay&#34;
+
+<span id="WindowsCPUAndMemoryAffinity" data-kind="constant">	<span class="comment">// owner: @jsturtevant</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4888">https://kep.k8s.io/4888</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Add CPU and Memory Affinity support to Windows nodes with CPUManager, MemoryManager and Topology manager</span>
+	WindowsCPUAndMemoryAffinity <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;WindowsCPUAndMemoryAffinity&#34;
+
+<span id="WindowsGracefulNodeShutdown" data-kind="constant">	<span class="comment">// owner: @zylxjtu</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/4802">https://kep.k8s.io/4802</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for graceful shutdown windows node.</span>
+	WindowsGracefulNodeShutdown <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;WindowsGracefulNodeShutdown&#34;
+
+<span id="WindowsHostNetwork" data-kind="constant">	<span class="comment">// owner: @marosset</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/3503">https://kep.k8s.io/3503</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for joining Windows containers to a hosts&#39; network namespace.</span>
+	WindowsHostNetwork <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;WindowsHostNetwork&#34;
+
+<span id="WorkloadAwarePreemption" data-kind="constant">	<span class="comment">// owner: @wojtek-t</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5710">https://kep.k8s.io/5710</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables support for workload-aware preemption in pod group scheduling cycle</span>
+	<span class="comment">// and related PodGroup and Workload API fields.</span>
+	WorkloadAwarePreemption <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;WorkloadAwarePreemption&#34;
+
+<span id="WorkloadWithJob" data-kind="constant">	<span class="comment">// owner: @helayoty @mm4tt @wojtek-t</span>
+</span>	<span class="comment">// kep: <a href="https://kep.k8s.io/5547">https://kep.k8s.io/5547</a></span>
+	<span class="comment">//</span>
+	<span class="comment">// Enables the Job controller to automatically create Workload and PodGroup</span>
+	<span class="comment">// objects for Jobs that qualify for gang scheduling.</span>
+	WorkloadWithJob <a href="/k8s.io/component-base/featuregate">featuregate</a>.<a href="/k8s.io/component-base/featuregate#Feature">Feature</a> = &#34;WorkloadWithJob&#34;
+)</pre>
+    </div>
+  <p>Every feature gate should have an entry here following this template:
+</p><p>// owner: @username
+// kep: <a href="https://kep.k8s.io/NNN">https://kep.k8s.io/NNN</a>
+MyFeature featuregate.Feature = &#34;MyFeature&#34;
+</p><p>Feature gates should be listed in alphabetical, case-sensitive
+(upper before any lower case character) order. This reduces the risk
+of code conflicts because changes are more likely to be scattered
+across the file.
+</p>
+</section>
+
+  <h3 tabindex="-1" id="pkg-variables" class="Documentation-variablesHeader">Variables <a href="#pkg-variables" title="Go to Variables" aria-label="Go to Variables">¶</a></h3>
+
+  <section class="Documentation-variables"><p class="Documentation-empty">This section is empty.</p></section>
+
+  <h3 tabindex="-1" id="pkg-functions" class="Documentation-functionsHeader">Functions <a href="#pkg-functions" title="Go to Functions" aria-label="Go to Functions">¶</a></h3>
+
+  <section class="Documentation-functions"><p class="Documentation-empty">This section is empty.</p></section>
+
+  <h3 tabindex="-1" id="pkg-types" class="Documentation-typesHeader">Types <a href="#pkg-types" title="Go to Types" aria-label="Go to Types">¶</a></h3>
+
+  <section class="Documentation-types"><p class="Documentation-empty">This section is empty.</p></section></div> 
+
+
+
+
+
+
+
+      
+    </div>
+  </div>
+
+        
+      
+      
+        
+  <div class="UnitFiles js-unitFiles">
+    <h2 class="UnitFiles-title" id="section-sourcefiles">
+      <img class="go-Icon" height="24" width="24" src="/static/shared/icon/insert_drive_file_gm_grey_24dp.svg" alt="">
+      Source Files
+      <a class="UnitFiles-idLink" href="#section-sourcefiles" title="Go to Source Files" aria-label="Go to Source Files">¶</a>
+    </h2><div class="UnitFiles-titleLink">
+      <a href="https://github.com/kubernetes/kubernetes/tree/v1.36.3/pkg/features" target="_blank" rel="noopener">View all Source files</a>
+    </div><div>
+      <ul class="UnitFiles-fileList"><li><a href="https://github.com/kubernetes/kubernetes/blob/v1.36.3/pkg/features/client_adapter.go" target="_blank" rel="noopener" title="client_adapter.go">client_adapter.go</a></li><li><a href="https://github.com/kubernetes/kubernetes/blob/v1.36.3/pkg/features/kube_features.go" target="_blank" rel="noopener" title="kube_features.go">kube_features.go</a></li></ul>
+    </div>
+  </div>
+
+      
+      
+    </div>
+  </div>
+  <div id="showInternal-description" hidden> Click to show internal directories. </div>
+  <div id="hideInternal-description" hidden> Click to hide internal directories. </div>
+</article>
+    <footer class="go-Main-footer"></footer>
+  </main>
+
+    
+  <footer class="go-Footer">
+    
+    <div class="go-Footer-links">
+      <div class="go-Footer-linkColumn">
+        <a href="https://go.dev/solutions" class="go-Footer-link go-Footer-link--primary"
+            data-gtmc="footer link">
+          Why Go
+        </a>
+        <a href="https://go.dev/solutions#use-cases" class="go-Footer-link"
+            data-gtmc="footer link">
+          Use Cases
+        </a>
+        <a href="https://go.dev/solutions#case-studies" class="go-Footer-link"
+            data-gtmc="footer link">
+          Case Studies
+        </a>
+      </div>
+      <div class="go-Footer-linkColumn">
+        <a href="https://learn.go.dev/" class="go-Footer-link go-Footer-link--primary"
+            data-gtmc="footer link">
+          Get Started
+        </a>
+        <a href="https://play.golang.org" class="go-Footer-link" data-gtmc="footer link">
+          Playground
+        </a>
+        <a href="https://tour.golang.org" class="go-Footer-link" data-gtmc="footer link">
+          Tour
+        </a>
+        <a href="https://stackoverflow.com/questions/tagged/go?tab=Newest" class="go-Footer-link"
+            data-gtmc="footer link">
+          Stack Overflow
+        </a>
+        <a href="https://go.dev/help" class="go-Footer-link"
+            data-gtmc="footer link">
+          Help
+        </a>
+      </div>
+      <div class="go-Footer-linkColumn">
+        <a href="https://pkg.go.dev" class="go-Footer-link go-Footer-link--primary"
+            data-gtmc="footer link">
+          Packages
+        </a>
+        <a href="/std" class="go-Footer-link" data-gtmc="footer link">
+          Standard Library
+        </a>
+        <a href="/golang.org/x" class="go-Footer-link" data-gtmc="footer link">
+          Sub-repositories
+        </a>
+        <a href="https://pkg.go.dev/about" class="go-Footer-link" data-gtmc="footer link">
+          About Go Packages
+        </a>
+         <a href="/api" class="go-Footer-link" data-gtmc="footer link">
+          pkg.go.dev API
+        </a>
+      </div>
+      <div class="go-Footer-linkColumn">
+        <a href="https://go.dev/project" class="go-Footer-link go-Footer-link--primary"
+            data-gtmc="footer link">
+          About
+        </a>
+        <a href="https://go.dev/dl/" class="go-Footer-link" data-gtmc="footer link">Download</a>
+        <a href="https://go.dev/blog" class="go-Footer-link" data-gtmc="footer link">Blog</a>
+        <a href="https://github.com/golang/go/issues" class="go-Footer-link" data-gtmc="footer link">
+          Issue Tracker
+        </a>
+        <a href="https://go.dev/doc/devel/release.html" class="go-Footer-link"
+            data-gtmc="footer link">
+          Release Notes
+        </a>
+        <a href="https://go.dev/brand" class="go-Footer-link" data-gtmc="footer link">
+          Brand Guidelines
+        </a>
+        <a href="https://go.dev/conduct" class="go-Footer-link" data-gtmc="footer link">
+          Code of Conduct
+        </a>
+      </div>
+      <div class="go-Footer-linkColumn">
+        <a href="https://www.twitter.com/golang" class="go-Footer-link go-Footer-link--primary"
+            data-gtmc="footer link">
+          Connect
+        </a>
+        <a href="https://www.twitter.com/golang" class="go-Footer-link" data-gtmc="footer link">
+          Twitter
+        </a>
+        <a href="https://github.com/golang" class="go-Footer-link" data-gtmc="footer link">GitHub</a>
+        <a href="https://invite.slack.golangbridge.org/" class="go-Footer-link"
+            data-gtmc="footer link">
+          Slack
+        </a>
+        <a href="https://reddit.com/r/golang" class="go-Footer-link" data-gtmc="footer link">
+          r/golang
+        </a>
+        <a href="https://www.meetup.com/pro/go" class="go-Footer-link" data-gtmc="footer link">
+          Meetup
+        </a>
+        <a href="https://golangweekly.com/" class="go-Footer-link" data-gtmc="footer link">
+          Golang Weekly
+        </a>
+      </div>
+    </div>
+    <div class="go-Footer-bottom">
+      <img class="go-Footer-gopher"  width="1431" height="901"
+          src="/static/shared/gopher/pilot-bust-1431x901.svg" alt="Gopher in flight goggles">
+      <ul class="go-Footer-listRow">
+        <li class="go-Footer-listItem">
+          <a href="https://go.dev/copyright" data-gtmc="footer link">Copyright</a>
+        </li>
+        <li class="go-Footer-listItem">
+          <a href="https://go.dev/tos" data-gtmc="footer link">Terms of Service</a>
+        </li>
+        <li class="go-Footer-listItem">
+          <a href="http://www.google.com/intl/en/policies/privacy/" data-gtmc="footer link"
+              target="_blank" rel="noopener">
+            Privacy Policy
+          </a>
+        </li>
+        <li class="go-Footer-listItem">
+          <a href="https://go.dev/s/pkgsite-feedback" target="_blank" rel="noopener"
+              data-gtmc="footer link">
+            Report an Issue
+          </a>
+        </li>
+        <li class="go-Footer-listItem">
+          <button class="go-Button go-Button--text go-Footer-toggleTheme js-toggleTheme" aria-label="Theme Toggle">
+            <img data-value="auto" class="go-Icon go-Icon--inverted" height="24" width="24" src="/static/shared/icon/brightness_6_gm_grey_24dp.svg" alt="System theme">
+            <img data-value="dark" class="go-Icon go-Icon--inverted" height="24" width="24" src="/static/shared/icon/brightness_2_gm_grey_24dp.svg" alt="Dark theme">
+            <img data-value="light" class="go-Icon go-Icon--inverted" height="24" width="24" src="/static/shared/icon/light_mode_gm_grey_24dp.svg" alt="Light theme">
+            <p> Theme Toggle </p>
+          </button>
+        </li>
+        <li class="go-Footer-listItem">
+          <button class="go-Button go-Button--text go-Footer-keyboard js-openShortcuts" aria-label="Shorcuts Modal">
+            <img class="go-Icon go-Icon--inverted" height="24" width="24" src="/static/shared/icon/keyboard_grey_24dp.svg" alt="">
+            <p> Shortcuts Modal </p>
+          </button>
+        </li>
+      </ul>
+      <a class="go-Footer-googleLogo" href="https://google.com" target="_blank"rel="noopener"
+          data-gtmc="footer link">
+        <img class="go-Footer-googleLogoImg" height="24" width="72"
+            src="/static/shared/logo/google-white.svg" alt="Google logo">
+      </a>
+    </div>
+  </footer>
+
+    
+  <dialog id="jump-to-modal" class="JumpDialog go-Modal go-Modal--md js-modal">
+    <form method="dialog" data-gmtc="jump to form" aria-label="Jump to Identifier">
+      <div class="Dialog-title go-Modal-header">
+        <h2>Jump to</h2>
+        <button
+          class="go-Button go-Button--inline"
+          type="button"
+          data-modal-close
+          data-gtmc="modal button"
+          aria-label="Close"
+        >
+          <img
+            class="go-Icon"
+            height="24"
+            width="24"
+            src="/static/shared/icon/close_gm_grey_24dp.svg"
+            alt=""
+          />
+        </button>
+      </div>
+      <div class="JumpDialog-filter">
+        <input class="JumpDialog-input go-Input" autocomplete="off" type="text">
+      </div>
+      <div class="JumpDialog-body go-Modal-body">
+        <div class="JumpDialog-list"></div>
+      </div>
+      <div class="go-Modal-actions">
+        <button class="go-Button" data-test-id="close-dialog">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="ShortcutsDialog go-Modal go-Modal--sm js-modal">
+    <form method="dialog">
+      <div class="go-Modal-header">
+        <h2>Keyboard shortcuts</h2>
+        <button
+          class="go-Button go-Button--inline"
+          type="button"
+          data-modal-close
+          data-gtmc="modal button"
+          aria-label="Close"
+        >
+          <img
+            class="go-Icon"
+            height="24"
+            width="24"
+            src="/static/shared/icon/close_gm_grey_24dp.svg"
+            alt=""
+          />
+        </button>
+      </div>
+      <div class="go-Modal-body">
+        <table>
+          <tbody>
+            <tr><td class="ShortcutsDialog-key">
+              <strong>?</strong></td><td> : This menu</td>
+            </tr>
+            <tr><td class="ShortcutsDialog-key">
+              <strong>/</strong></td><td> : Search site</td>
+            </tr>
+            <tr><td class="ShortcutsDialog-key">
+              <strong>f</strong> or <strong>F</strong></td><td> : Jump to</td>
+            </tr>
+            <tr>
+              <td class="ShortcutsDialog-key"><strong>y</strong> or <strong>Y</strong></td>
+              <td> : Canonical URL</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="go-Modal-actions">
+        <button class="go-Button" data-test-id="close-dialog">Close</button>
+      </div>
+    </form>
+  </dialog>
+
+    
+      <section class="Cookie-notice js-cookieNotice">
+        <div>go.dev uses cookies from Google to deliver and enhance the quality of its services and to
+        analyze traffic. <a target=_blank href="https://policies.google.com/technologies/cookies">Learn more.</a></div>
+        <div><button class="go-Button">Okay</button></div>
+      </section>
+    
+    
+      <script>
+        // this will throw if the querySelector can’t find the element
+        const gtmId = document.querySelector('.js-gtmID').dataset.gtmid;
+        if (!gtmId) {
+          throw new Error('Google Tag Manager ID not found');
+        }
+        loadScript(`https://www.googletagmanager.com/gtm.js?id=${gtmId}`);
+      </script>
+      <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W8MVQXG"
+                height="0" width="0" style="display:none;visibility:hidden">
+        </iframe>
+      </noscript>
+    
+    
+  
+  <div class="js-canonicalURLPath" data-canonical-url-path="/k8s.io/kubernetes@v1.36.3/pkg/features" hidden></div>
+  <div class="js-playgroundVars" data-modulepath="k8s.io/kubernetes" data-version="v1.36.3" hidden></div>
+  <script>
+    loadScript('/static/frontend/unit/main/main.js')
+  </script>
+
+  <script>
+    loadScript('/static/frontend/unit/unit.js')
+  </script>
+
+  </body>
+</html>

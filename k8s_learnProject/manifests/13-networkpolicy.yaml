@@ -1,0 +1,29 @@
+# =============================================================================
+# 13 — NetworkPolicy：网络流量隔离（零信任）
+# -----------------------------------------------------------------------------
+# NetworkPolicy 控制Pod 间的网络访问，默认允许所有，需显式定义策略才限制。
+# 前提：CNI 插件需支持（kind 默认使用 kindnetd，支持基本 NetworkPolicy）。
+# 这里限制：Redis 只允许 web 命名空间内的 web Pod 访问，其他一律拒绝。
+# 命令: kubectl -n learn-space get networkpolicy
+#       验证: kubectl -n learn-space exec rbac-test -- wget -qO- redis:6379 (会被拒)
+# =============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-allow-web-only
+  namespace: learn-space
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress # 仅限制入站
+  ingress:
+    # 只允许 app=web 的 Pod 访问 redis 的 6379 端口
+    - from:
+        - podSelector:
+            matchLabels:
+              app: web
+      ports:
+        - protocol: TCP
+          port: 6379

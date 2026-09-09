@@ -1,0 +1,50 @@
+{"id":"search-attention","query":"attention is all","intent":"paper_search","expected_dois":["10.48550/arxiv.1706.03762"],"answer_must_include":[],"must_cite":true}
+{"id":"search-bert","query":"BERT pre-training of deep bidirectional transformers","intent":"paper_search","expected_dois":["10.48550/arxiv.1810.04805"],"answer_must_include":[],"must_cite":true}
+{"id":"search-gpt3","query":"language models are few-shot learners","intent":"paper_search","expected_dois":["10.48550/arxiv.2005.14165"],"answer_must_include":[],"must_cite":true}
+{"id":"search-resnet","query":"deep residual learning for image recognition","intent":"paper_search","expected_dois":["10.1109/cvpr.2016.90","10.48550/arxiv.1512.03385"],"answer_must_include":[],"must_cite":true}
+{"id":"search-cnn-cn","query":"CNN相关论文","intent":"paper_search","expected_dois":[],"answer_must_include":["CNN"],"must_cite":true}
+{"id":"search-rag-cn","query":"RAG相关论文","intent":"paper_search","expected_dois":[],"answer_must_include":[],"must_cite":true}
+{"id":"search-mask-rcnn","query":"Mask R-CNN","intent":"paper_search","expected_dois":["10.1109/iccv.2017.322","10.48550/arxiv.1703.06870"],"answer_must_include":[],"must_cite":true}
+{"id":"search-faster-rcnn","query":"Faster R-CNN region proposal networks","intent":"paper_search","expected_dois":["10.1109/tpami.2016.2577031","10.48550/arxiv.1506.01497"],"answer_must_include":[],"must_cite":true}
+{"id":"search-vgg","query":"very deep convolutional networks for large-scale image recognition","intent":"paper_search","expected_dois":["10.48550/arxiv.1409.1556"],"answer_must_include":[],"must_cite":true}
+{"id":"search-yolo","query":"you only look once unified real-time object detection","intent":"paper_search","expected_dois":["10.48550/arxiv.1506.02640"],"answer_must_include":[],"must_cite":true}
+{"id":"search-gan","query":"generative adversarial networks","intent":"paper_search","expected_dois":["10.48550/arxiv.1406.2661"],"answer_must_include":[],"must_cite":true}
+{"id":"search-vit","query":"an image is worth 16x16 words transformers for image recognition","intent":"paper_search","expected_dois":["10.48550/arxiv.2010.11929"],"answer_must_include":[],"must_cite":true}
+{"id":"search-ddpm","query":"denoising diffusion probabilistic models","intent":"paper_search","expected_dois":["10.48550/arxiv.2006.11239"],"answer_must_include":[],"must_cite":true}
+{"id":"search-clip","query":"learning transferable visual models from natural language supervision","intent":"paper_search","expected_dois":["10.48550/arxiv.2103.00020"],"answer_must_include":[],"must_cite":true}
+{"id":"search-diffusion-beat","query":"diffusion models beat GANs on image synthesis","intent":"paper_search","expected_dois":["10.48550/arxiv.2105.00557"],"answer_must_include":[],"must_cite":true}
+{"id":"search-seq2seq","query":"sequence to sequence learning with neural networks","intent":"paper_search","expected_dois":["10.48550/arxiv.1409.3215"],"answer_must_include":[],"must_cite":true}
+{"id":"search-bahdanau","query":"neural machine translation by jointly learning to align and translate","intent":"paper_search","expected_dois":["10.48550/arxiv.1409.0473"],"answer_must_include":[],"must_cite":true}
+{"id":"search-adam","query":"Adam a method for stochastic optimization","intent":"paper_search","expected_dois":["10.48550/arxiv.1412.6980"],"answer_must_include":[],"must_cite":true}
+{"id":"search-batchnorm","query":"batch normalization accelerating deep network training","intent":"paper_search","expected_dois":["10.48550/arxiv.1502.03167"],"answer_must_include":[],"must_cite":true}
+{"id":"search-yolov3","query":"YOLOv3 an incremental improvement","intent":"paper_search","expected_dois":["10.48550/arxiv.1804.02767"],"answer_must_include":[],"must_cite":true}
+{"id":"search-stylegan","query":"a style-based generator architecture for generative adversarial networks","intent":"paper_search","expected_dois":["10.48550/arxiv.1812.04948"],"answer_must_include":[],"must_cite":true}
+{"id":"search-cn-lstm","query":"LSTM相关论文","intent":"paper_search","expected_dois":[],"answer_must_include":["LSTM"],"must_cite":true}
+{"id":"concept-cnn","query":"请详细介绍 CNN的原理分析。","intent":"concept_qa","expected_dois":[],"answer_must_include":["卷积","池化","参数共享","Transformer"],"must_cite":true}
+{"id":"concept-rag","query":"请详细介绍 RAG 的原理和工程流程。","intent":"concept_qa","expected_dois":[],"answer_must_include":["检索","生成","证据"],"must_cite":true}
+{"id":"concept-transformer","query":"请详细介绍 Transformer 的原理。","intent":"concept_qa","expected_dois":[],"answer_must_include":["自注意力","Query","Key","Value"],"must_cite":true}
+{"id":"concept-lstm","query":"请详细介绍 LSTM 的原理。","intent":"concept_qa","expected_dois":[],"answer_must_include":["LSTM","门控","记忆"],"must_cite":true}
+{"id":"concept-gru","query":"请详细介绍 GRU 的原理。","intent":"concept_qa","expected_dois":[],"answer_must_include":["GRU","门控"],"must_cite":true}
+{"id":"qa-transformer-detail","query":"请介绍 Attention Is All You Need 这篇论文提出的方法，详细从原理分析。","intent":"evidence_qa","expected_dois":["10.48550/arxiv.1706.03762"],"answer_must_include":["Transformer","自注意力","多头注意力"],"must_cite":true}
+{"id":"qa-bert-detail","query":"请详细介绍 BERT 这篇论文提出的预训练方法。","intent":"evidence_qa","expected_dois":["10.48550/arxiv.1810.04805"],"answer_must_include":["BERT","预训练","双向","Transformer"],"must_cite":true}
+{"id":"qa-resnet-detail","query":"请详细介绍 ResNet 这篇论文提出的残差学习方法。","intent":"evidence_qa","expected_dois":["10.48550/arxiv.1512.03385"],"answer_must_include":["残差"],"must_cite":true}
+{"id":"qa-rag-detail","query":"请介绍 RAG 这篇论文提出的检索增强生成方法。","intent":"evidence_qa","expected_dois":["10.48550/arxiv.2005.11401"],"answer_must_include":["检索","增强","生成"],"must_cite":true}
+{"id":"qa-gan-detail","query":"请详细介绍 GAN 这篇论文提出的生成对抗网络方法。","intent":"evidence_qa","expected_dois":["10.48550/arxiv.1406.2661"],"answer_must_include":["Generative Adversarial"],"must_cite":true}
+{"id":"detail-attention","query":"请查询 DOI 10.48550/arXiv.1706.03762 的作者、年份和链接","intent":"paper_detail","expected_dois":["10.48550/arxiv.1706.03762"],"answer_must_include":["2017","Ashish Vaswani"],"must_cite":true}
+{"id":"detail-resnet","query":"请查询 DOI 10.48550/arXiv.1512.03385 的作者和年份","intent":"paper_detail","expected_dois":["10.48550/arxiv.1512.03385"],"answer_must_include":["Kaiming He"],"must_cite":true}
+{"id":"detail-gan","query":"请查询 DOI 10.48550/arXiv.1406.2661 的作者和年份","intent":"paper_detail","expected_dois":["10.48550/arxiv.1406.2661"],"answer_must_include":["Ian Goodfellow"],"must_cite":true}
+{"id":"detail-vit","query":"请查询 DOI 10.48550/arXiv.2010.11929 的作者","intent":"paper_detail","expected_dois":["10.48550/arxiv.2010.11929"],"answer_must_include":["Alexey Dosovitskiy"],"must_cite":true}
+{"id":"detail-clip","query":"请查询 DOI 10.48550/arXiv.2103.00020 的作者和年份","intent":"paper_detail","expected_dois":["10.48550/arxiv.2103.00020"],"answer_must_include":["Alec Radford"],"must_cite":true}
+{"id":"compare-transformer-bert","query":"比较 Attention Is All You Need 和 BERT pre-training","intent":"compare","expected_dois":["10.48550/arxiv.1706.03762","10.48550/arxiv.1810.04805"],"answer_must_include":["Attention","BERT"],"must_cite":true}
+{"id":"compare-resnet-vgg","query":"比较 ResNet 和 VGG network","intent":"compare","expected_dois":["10.48550/arxiv.1512.03385","10.48550/arxiv.1409.1556"],"answer_must_include":["Residual","Convolutional"],"must_cite":true}
+{"id":"compare-gan-diffusion","query":"比较 Generative Adversarial Networks 和 Diffusion Models","intent":"compare","expected_dois":["10.48550/arxiv.1406.2661","10.48550/arxiv.2006.11239"],"answer_must_include":["Adversarial","Diffusion"],"must_cite":true}
+{"id":"compare-yolo-faster","query":"比较 YOLO 和 Faster R-CNN","intent":"compare","expected_dois":["10.48550/arxiv.1506.02640","10.48550/arxiv.1506.01497"],"answer_must_include":["Look","R-CNN"],"must_cite":true}
+{"id":"compare-gpt-bert","query":"比较 GPT-3 和 BERT","intent":"compare","expected_dois":["10.48550/arxiv.2005.14165","10.48550/arxiv.1810.04805"],"answer_must_include":["Language Models","BERT"],"must_cite":true}
+{"id":"trend-attention","query":"注意力机制近几年研究趋势","intent":"trend","expected_dois":[],"answer_must_include":["年度分布"],"must_cite":true}
+{"id":"trend-gan","query":"生成对抗网络近五年研究趋势","intent":"trend","expected_dois":[],"answer_must_include":["年度分布"],"must_cite":true}
+{"id":"trend-transformer","query":"Transformer 架构研究趋势","intent":"trend","expected_dois":[],"answer_must_include":["年度分布"],"must_cite":true}
+{"id":"trend-diffusion","query":"扩散模型研究方向趋势","intent":"trend","expected_dois":[],"answer_must_include":["年度分布"],"must_cite":true}
+{"id":"trend-llm","query":"大语言模型研究趋势","intent":"trend","expected_dois":[],"answer_must_include":["年度分布"],"must_cite":true}
+{"id":"no-result","query":"不存在的 KnowledgePilot 论文 999999","intent":"paper_search","expected_dois":[],"answer_must_include":["没有找到"],"must_cite":false}
+{"id":"no-result-fake-doi","query":"请查询 DOI 10.9999/not-a-real-paper 的详情","intent":"paper_detail","expected_dois":[],"answer_must_include":["没有找到"],"must_cite":false}
+{"id":"no-result-fake-title","query":"请介绍一篇不存在的论文 xyz123abc 的方法","intent":"evidence_qa","expected_dois":[],"answer_must_include":["不足以确认"],"must_cite":false}

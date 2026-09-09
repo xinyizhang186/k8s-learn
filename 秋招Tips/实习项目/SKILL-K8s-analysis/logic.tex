@@ -1,0 +1,256 @@
+% logic.tex — AutoK8s 项目核心逻辑 (Beamer Metropolis, Overleaf-ready)
+% 编译: xelatex logic.tex (需 metropolis 主题 + ctex 中文支持)
+% Overleaf: 选 XeLaTeX 编译器, 主文件设为 logic.tex
+\documentclass[aspectratio=169,UTF8]{beamer}
+
+\usetheme[progressbar=frametitle,
+          numbering=fraction,
+          sectionpage=progressbar,
+          subsectionpage=none,
+          block=fill]{metropolis}
+
+\usepackage{ctex}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc}
+\usepackage{booktabs}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!70!black,
+  urlcolor=blue!70!black,
+  pdftitle={AutoK8s 项目核心逻辑},
+}
+
+% 中文字体回退 (Overleaf 默认有 FandSong/Heiti 等)
+\setCJKmainfont{Noto Serif CJK SC}[AutoFakeBold=true]
+\setCJKsansfont{Noto Sans CJK SC}[AutoFakeBold=true]
+
+% 统一流程图节点样式 (紧凑: 小字号 + 窄宽度)
+\tikzset{
+  flowbox/.style={draw, rounded corners, minimum height=0.55cm, minimum width=1.7cm,
+                   align=center, font=\tiny, inner sep=1.5pt},
+  bluebox/.style={flowbox, fill=blue!10},
+  yellowbox/.style={flowbox, fill=yellow!25},
+  redbox/.style={flowbox, fill=red!20},
+  greenbox/.style={flowbox, fill=green!15},
+  orangebox/.style={flowbox, fill=orange!20},
+  flowarrow/.style={-{Stealth[length=2.5mm,width=2mm]}, thick, line width=1.2pt},
+  bigbox/.style={draw, rounded corners, minimum height=0.6cm, minimum width=2.2cm,
+                  align=center, font=\scriptsize, inner sep=2pt},
+}
+
+% 取消导航符号
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=8mm, text margin right=8mm}
+
+\title{AutoK8s 项目核心逻辑}
+\subtitle{Kubernetes 版本分析与特性变更统一工具}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+% =========================================================
+% 第 1 页: 概览 + 双 Sheet 架构
+% =========================================================
+\begin{frame}{概览：双 Sheet 架构}
+  \footnotesize 从\href{https://kubernetes.io/blog/2026/04/22/kubernetes-v1-36-release/}{\textcolor{blue!70!black}{博客}}与 \href{https://github.com/kubernetes/kubernetes/blob/v1.36.0/pkg/features/kube_features.go}{\textcolor{blue!70!black}{\texttt{kube\_features.go}}} 生成双 Sheet xlsx，再按 \texttt{Prompt.md} 用 AI 优化文本列。
+
+  \vspace{0.2em}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{block}{版本分析 Sheet}
+      \footnotesize
+      \begin{itemize}\setlength\itemsep{0.02em}
+        \item 输入：发布博客 URL
+        \item 输出：5 列 × N 特性 + M 弃用
+        \item 来源：博客 HTML $\to$ 正则+机翻
+      \end{itemize}
+    \end{block}
+    \column{0.5\textwidth}
+    \begin{block}{特性变更 Sheet}
+      \footnotesize
+      \begin{itemize}\setlength\itemsep{0.02em}
+        \item 输入：\texttt{kube\_features.go} + 版本范围
+        \item 输出：14 列 × N 门控变更
+        \item 来源：Go 源码解析 + KEP 取证
+      \end{itemize}
+    \end{block}
+  \end{columns}
+
+  \vspace{0.2em}
+  \begin{center}
+  \begin{tikzpicture}[node distance=0.4cm, every node/.style={font=\tiny}]
+    \node[bigbox, fill=blue!10, minimum width=1.8cm] (blog) {博客 URL};
+    \node[bigbox, fill=blue!10, minimum width=1.8cm, below=of blog] (go) {kube\_features.go};
+    \node[bigbox, fill=green!15, minimum width=1.8cm, right=1.0cm of blog] (va) {版本分析};
+    \node[bigbox, fill=green!15, minimum width=1.8cm, right=1.0cm of go] (fc) {特性变更};
+    \node[bigbox, fill=orange!20, minimum width=1.8cm, right=1.5cm of $(va)!0.5!(fc)$] (xlsx) {双 Sheet xlsx};
+    \draw[flowarrow] (blog) -- (va);
+    \draw[flowarrow] (go) -- (fc);
+    \draw[flowarrow] (va) -- (xlsx);
+    \draw[flowarrow] (fc) -- (xlsx);
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.1em}
+  \tiny\textcolor{gray}{入口 \texttt{generate.py} 自适应选择模式；\texttt{--blog} 与 \texttt{--go-file} 同时给出时合并为双 Sheet。}
+\end{frame}
+
+% =========================================================
+% 第 2 页: 版本分析 + 特性变更 流水线
+% =========================================================
+\begin{frame}{两条核心流水线}
+  \begin{center}
+  \begin{tikzpicture}[node distance=0.5cm]
+    % 版本分析流程 (上排) — 5 节点紧凑
+    \node[font=\tiny\bfseries, text=blue!70] (lab1) {版本分析:};
+    \node[bluebox, right=0.15cm of lab1] (v1) {抓取博客};
+    \node[bluebox, right=of v1] (v2) {提取特性};
+    \node[bluebox, right=of v2] (v3) {逐句分类};
+    \node[bluebox, right=of v3] (v4) {正则+机翻};
+    \node[redbox, right=of v4] (v5) {质量门};
+    \node[greenbox, right=of v5] (v6) {xlsx};
+    \draw[flowarrow] (v1) -- (v2);
+    \draw[flowarrow] (v2) -- (v3);
+    \draw[flowarrow] (v3) -- (v4);
+    \draw[flowarrow] (v4) -- (v5);
+    \draw[flowarrow] (v5) -- (v6);
+
+    % 特性变更流程 (下排)
+    \node[font=\tiny\bfseries, text=blue!70, below=0.7cm of lab1] (lab2) {特性变更:};
+    \node[bluebox, right=0.15cm of lab2] (f1) {解析 Go};
+    \node[bluebox, right=of f1] (f2) {推导变更};
+    \node[yellowbox, right=of f2] (f3) {三级取证};
+    \node[yellowbox, right=of f3] (f4) {翻译};
+    \node[redbox, right=of f4] (f5) {质量门};
+    \node[greenbox, right=of f5] (f6) {xlsx};
+    \draw[flowarrow] (f1) -- (f2);
+    \draw[flowarrow] (f2) -- (f3);
+    \draw[flowarrow] (f3) -- (f4);
+    \draw[flowarrow] (f4) -- (f5);
+    \draw[flowarrow] (f5) -- (f6);
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.2em}
+  \footnotesize
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{版本分析关键算法}：
+    \begin{itemize}\setlength\itemsep{0.03em}
+      \item 句子分类：noise $>$ stage $>$ feature $>$ benefit $>$ pain
+      \item 三段提取：现状 $\to$ 本特性增强 $\to$ 价值分析
+    \end{itemize}
+    \column{0.5\textwidth}
+    \textbf{特性变更三级取证}：
+    \begin{enumerate}\setlength\itemsep{0.03em}
+      \item \href{https://pkg.go.dev/k8s.io/kubernetes/pkg/features}{\textcolor{blue!70!black}{\texttt{pkg.go.dev} 包文档}}
+      \item KEP 提案仓库 README
+      \item \texttt{CHANGELOG}（回退）
+    \end{enumerate}
+    \textbf{兼容性}：默认值变化→不兼容；开关不变→兼容
+  \end{columns}
+\end{frame}
+
+% =========================================================
+% 第 3 页: 质量门 + 数据流
+% =========================================================
+\begin{frame}{质量门与数据流}
+  \footnotesize
+  \begin{columns}[T]
+    \column{0.55\textwidth}
+    \textbf{质量门}（\texttt{quality.py}）：
+    \begin{itemize}\setlength\itemsep{0.03em}
+      \item 痛点：$\geq 14$ 字，含问题词
+      \item 增强句：$\geq 20$ 字，无历史陈述
+      \item 价值分析：$\geq 14$ 字，含收益词
+      \item 中文占比：$\geq 20\%$
+      \item \textcolor{red}{未通过 $\to$ 字段留空}
+    \end{itemize}
+
+    \vspace{0.1em}
+    \scriptsize\textbf{实现方法}：正则匹配问题词/收益词 + 长度校验 + 模板前缀检测（\texttt{\_TEMPLATE\_PREFIXES}）+ 中文占比计算（\texttt{chinese\_ratio}），所有规则在 \texttt{content\_issues()} 中串联，任一不过即拦截。
+
+    \vspace{0.15em}
+    \begin{tcolorbox}[colback=orange!8, colframe=orange!60, boxrule=0.4pt, sharp corners, fontupper=\scriptsize]
+    \begin{tabular}{@{}p{0.18\linewidth}@{}p{0.76\linewidth}@{}}
+      \textbf{机器列} & 代码解析，\textcolor{green!50!black}{100\% 准确} \\
+      \textbf{文本列} & 正则+机翻，\textcolor{red!80!black}{\textbf{不准}}——需 AI 按 \texttt{Prompt.md} 优化 \\
+    \end{tabular}
+    \end{tcolorbox}
+
+    \column{0.45\textwidth}
+    \centering\textbf{数据流}
+    \begin{center}
+    \begin{tikzpicture}[node distance=0.3cm, every node/.style={font=\tiny}]
+      \node[bluebox, minimum width=1.6cm] (go) {kube\_features.go};
+      \node[bluebox, minimum width=1.6cm, below=of go] (ch) {CHANGELOG};
+      \node[bluebox, minimum width=1.6cm, below=of ch] (blog) {博客 URL};
+      \node[greenbox, minimum width=1.6cm, right=0.6cm of go] (fc) {特性变更};
+      \node[greenbox, minimum width=1.6cm, right=0.6cm of blog] (va) {版本分析};
+      \draw[flowarrow] (go) -- (fc);
+      \draw[flowarrow, dashed] (ch) -- (fc);
+      \draw[flowarrow] (blog) -- (va);
+    \end{tikzpicture}
+    \end{center}
+    \scriptsize\textcolor{gray}{权威源：\texttt{kube\_features.go} 来自 K8s 源码。}
+  \end{columns}
+\end{frame}
+
+% =========================================================
+% 第 4 页: AI 文本优化流水线 (Prompt.md)
+% =========================================================
+\begin{frame}{AI 文本优化流水线（\texttt{Prompt.md}）}
+  \footnotesize\textbf{问题}：初步 xlsx 文本列走正则+机翻，存在 6 类失效：机翻错字、特性名被破坏、"现状"非痛点、价值分析缺失、KEP 配错、PR 模板噪声。
+
+  \vspace{0.2em}
+  \begin{center}
+  \begin{tikzpicture}[node distance=0.6cm]
+    \node[orangebox] (a) {\textbf{A}\\提取行};
+    \node[bluebox, right=of a] (b) {\textbf{B}\\websearch};
+    \node[yellowbox, right=of b] (c) {\textbf{C}\\证据生成};
+    \node[redbox, right=of c] (d) {\textbf{D}\\校验写回};
+    \node[greenbox, right=of d] (e) {optimized};
+    \draw[flowarrow] (a) -- (b);
+    \draw[flowarrow] (b) -- (c);
+    \draw[flowarrow] (c) -- (d);
+    \draw[flowarrow] (d) -- (e);
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.1em}
+  \scriptsize
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \textbf{四阶段}：
+    \begin{itemize}\setlength\itemsep{0.02em}
+      \item \textbf{A}：抽出需优化的行 + 机器上下文
+      \item \textbf{B}：\texttt{websearch} + \texttt{webfetch} 抓 KEP README
+      \item \textbf{C}：基于证据生成中文文本
+      \item \textbf{D}：六项硬约束校验 + 写回
+    \end{itemize}
+    \column{0.48\textwidth}
+    \textbf{文本来源优先级}：
+    \begin{enumerate}\setlength\itemsep{0.02em}
+      \item 参考文件 \texttt{AI\_agent/*.xlsx}
+      \item 预生成文本（官方博客）
+      \item websearch 现场生成
+    \end{enumerate}
+  \end{columns}
+
+  \vspace{0.15em}
+  \begin{tcolorbox}[colback=green!8, colframe=green!50!black, boxrule=0.4pt, sharp corners, fontupper=\scriptsize]
+  \textbf{六项硬约束}：\\[0.2em]
+  \begin{tabular}{@{}p{0.48\linewidth}@{}p{0.48\linewidth}@{}}
+    现状是痛点 & 增强含版本+阶段 \\
+    价值是收益非功能 & 排查方法非通用模板 \\
+    有说明必有资料 & 无机翻腔/噪声 \\
+  \end{tabular}\\[0.2em]
+  \textcolor{red!80!black}{\textbf{机器列不动，不过则留空绝不编造。}}
+  \end{tcolorbox}
+\end{frame}
+
+\end{document}

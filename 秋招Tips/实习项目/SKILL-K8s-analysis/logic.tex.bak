@@ -1,0 +1,215 @@
+% logic.tex — AutoK8s 项目核心逻辑 (Beamer Metropolis, Overleaf-ready)
+% 编译: xelatex logic.tex (需 metropolis 主题 + ctex 中文支持)
+% Overleaf: 选 XeLaTeX 编译器, 主文件设为 logic.tex
+\documentclass[aspectratio=169,UTF8]{beamer}
+
+\usetheme[progressbar=frametitle,
+          numbering=fraction,
+          sectionpage=progressbar,
+          subsectionpage=none,
+          block=fill]{metropolis}
+
+\usepackage{ctex}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, calc}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{tcolorbox}
+
+% 中文字体回退 (Overleaf 默认有 FandSong/Heiti 等)
+\setCJKmainfont{Noto Serif CJK SC}[AutoFakeBold=true]
+\setCJKsansfont{Noto Sans CJK SC}[AutoFakeBold=true]
+
+% 代码块样式
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  frame=single,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  showstringspaces=false,
+  language=bash,
+}
+
+% 取消导航符号
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=10mm, text margin right=10mm}
+
+\title{AutoK8s 项目核心逻辑}
+\subtitle{Kubernetes 版本分析与特性变更统一工具}
+\author{k8s-learn-zxy}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{概览}
+  \textbf{目标}：从 Kubernetes 发布博客与 \texttt{kube\_features.go} 自动生成双 Sheet xlsx 报告。
+
+  \vspace{0.6em}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \begin{block}{版本分析 Sheet}
+      \begin{itemize}
+        \item 输入：发布博客 URL
+        \item 输出：5 列 × N 特性 + M 弃用
+        \item 来源：博客 HTML 抓取 + LLM 推理
+      \end{itemize}
+    \end{block}
+    \column{0.5\textwidth}
+    \begin{block}{特性变更 Sheet}
+      \begin{itemize}
+        \item 输入：\texttt{kube\_features.go} + 版本范围
+        \item 输出：14 列 × N 门控变更
+        \item 来源：Go 源码解析 + KEP 取证
+      \end{itemize}
+    \end{block}
+  \end{columns}
+
+  \vspace{0.4em}
+  \begin{center}
+  \begin{tikzpicture}[node distance=1.4cm, every node/.style={font=\small}]
+    \node[draw, rounded corners, fill=blue!10, minimum width=2.6cm, minimum height=0.7cm] (blog) {博客 URL};
+    \node[draw, rounded corners, fill=blue!10, minimum width=2.6cm, minimum height=0.7cm, below=of blog] (go) {kube\_features.go};
+    \node[draw, rounded corners, fill=green!15, minimum width=2.6cm, minimum height=0.7cm, right=2.4cm of blog] (va) {版本分析};
+    \node[draw, rounded corners, fill=green!15, minimum width=2.6cm, minimum height=0.7cm, right=2.4cm of go] (fc) {特性变更};
+    \node[draw, rounded corners, fill=orange!20, minimum width=3.2cm, minimum height=0.9cm, right=1.6cm of $(va)!0.5!(fc)$] (xlsx) {双 Sheet xlsx};
+    \draw[-Stealth] (blog) -- (va);
+    \draw[-Stealth] (go) -- (fc);
+    \draw[-Stealth] (va) -- (xlsx);
+    \draw[-Stealth] (fc) -- (xlsx);
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.2em}
+  \footnotesize\textcolor{gray}{单一入口 \texttt{generate.py} 按参数自适应选择模式；\texttt{--blog} 与 \texttt{--go-file} 同时给出时合并为双 Sheet。}
+\end{frame}
+
+\begin{frame}{版本分析流水线}
+  \textbf{模块}：\texttt{autok8s.version\_analysis} \quad \textbf{核心}：\texttt{content\_gen.py}
+
+  \vspace{0.3em}
+  \begin{center}
+  \begin{tikzpicture}[node distance=0.5cm, every node/.style={font=\scriptsize}]
+    \node[draw, rounded corners, fill=blue!10, minimum width=2.2cm, minimum height=0.55cm] (f1) {fetcher 抓取博客};
+    \node[draw, rounded corners, fill=blue!10, minimum width=2.2cm, minimum height=0.55cm, right=of f1] (f2) {提取特性/弃用};
+    \node[draw, rounded corners, fill=blue!10, minimum width=2.2cm, minimum height=0.55cm, right=of f2] (f3) {逐句分类};
+    \node[draw, rounded corners, fill=yellow!25, minimum width=2.2cm, minimum height=0.55cm, below=0.8cm of f1] (f4) {LLM 推理 (Qwen)};
+    \node[draw, rounded corners, fill=yellow!25, minimum width=2.2cm, minimum height=0.55cm, right=of f4] (f5) {正则回退 (无 key)};
+    \node[draw, rounded corners, fill=red!20, minimum width=2.2cm, minimum height=0.55cm, right=of f5] (f6) {质量门 verify};
+    \node[draw, rounded corners, fill=green!15, minimum width=2.2cm, minimum height=0.55cm, right=of f6] (f7) {xlsx 写出};
+    \draw[-Stealth] (f1) -- (f2);
+    \draw[-Stealth] (f2) -- (f3);
+    \draw[-Stealth] (f3) -- (f4);
+    \draw[-Stealth] (f4) -- (f6);
+    \draw[-Stealth] (f5) -- (f6);
+    \draw[-Stealth] (f6) -- (f7);
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.3em}
+  \begin{columns}[T]
+    \column{0.5\textwidth}
+    \textbf{句子分类优先级}（\texttt{\_classify\_sentence}）：
+    \begin{enumerate}\setlength\itemsep{0.1em}
+      \item noise（KEP/SIG 噪声）
+      \item stage（阶段声明）
+      \item feature（方案动词）
+      \item benefit（收益从句）
+      \item pain（痛点词）
+      \item background / other
+    \end{enumerate}
+    \column{0.5\textwidth}
+    \textbf{三段提取}：
+    \begin{itemize}\setlength\itemsep{0.1em}
+      \item \textbf{现状}：pain $>$ background $>$ 反推
+      \item \textbf{本特性增强}：\texttt{v\{ver\} 将 \{name\} 升级为 \{stage\}}
+      \item \textbf{价值分析}：15--40 字收益概括
+    \end{itemize}
+    \textbf{富文本}：\texttt{xlsx\_writer} 自动加粗"现状："/"本特性增强："标签
+  \end{columns}
+\end{frame}
+
+\begin{frame}{特性变更流水线}
+  \textbf{模块}：\texttt{autok8s.feature\_changes} \quad \textbf{权威源}：\texttt{kube\_features.go}
+
+  \vspace{0.3em}
+  \begin{center}
+  \begin{tikzpicture}[node distance=0.45cm, every node/.style={font=\scriptsize}]
+    \node[draw, rounded corners, fill=blue!10, minimum width=2cm, minimum height=0.55cm] (p1) {parser 解析 Go};
+    \node[draw, rounded corners, fill=blue!10, minimum width=2cm, minimum height=0.55cm, right=of p1] (p2) {analyzer 推导变更};
+    \node[draw, rounded corners, fill=yellow!25, minimum width=2cm, minimum height=0.55cm, right=of p2] (p3) {三级取证};
+    \node[draw, rounded corners, fill=yellow!25, minimum width=2cm, minimum height=0.55cm, right=of p3] (p4) {narrative 翻译};
+    \node[draw, rounded corners, fill=red!20, minimum width=2cm, minimum height=0.55cm, right=of p4] (p5) {质量门};
+    \node[draw, rounded corners, fill=green!15, minimum width=2cm, minimum height=0.55cm, right=of p5] (p6) {xlsx (14 列)};
+    \draw[-Stealth] (p1) -- (p2);
+    \draw[-Stealth] (p2) -- (p3);
+    \draw[-Stealth] (p3) -- (p4);
+    \draw[-Stealth] (p4) -- (p5);
+    \draw[-Stealth] (p5) -- (p6);
+  \end{tikzpicture}
+  \end{center}
+
+  \vspace{0.3em}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+    \textbf{变更类型推导}（\texttt{analyzer}）：
+    \begin{itemize}\setlength\itemsep{0.1em}
+      \item \texttt{Added}：新门控出现
+      \item \texttt{Changed}：阶段/默认值变化（Alpha→Beta→GA）
+      \item \texttt{Deprecated}：门控弃用
+    \end{itemize}
+    \textbf{兼容性}：默认值变化→不兼容（需排查）；开关不变→兼容
+    \column{0.48\textwidth}
+    \textbf{三级取证链路}（\texttt{research}）：
+    \begin{enumerate}\setlength\itemsep{0.1em}
+      \item \texttt{pkg.go.dev} 包文档（特性键+描述+KEP 链接）
+      \item KEP 提案仓库（README 摘要）
+      \item \texttt{CHANGELOG-<版本>.md}（仅当包文档无该特性时回退）
+    \end{enumerate}
+    \textbf{核查留痕}：\texttt{--audit} 写出逐条核查 JSON
+  \end{columns}
+\end{frame}
+
+\begin{frame}{质量门与数据流}
+  \begin{columns}[T]
+    \column{0.52\textwidth}
+    \textbf{质量门}（\texttt{common/quality.py}，覆盖所有生成路径）：
+    \begin{itemize}\setlength\itemsep{0.15em}
+      \item 痛点：$\geq 14$ 字，含问题词，非模板前缀
+      \item 增强句：$\geq 20$ 字，无多余历史陈述
+      \item 价值分析：$\geq 14$ 字，含收益词，非功能描述
+      \item 中文占比：$\geq 20\%$
+      \item \textcolor{red}{未通过 → 读者字段留空，不可信内容不进入 xlsx}
+    \end{itemize}
+
+    \vspace{0.4em}
+    \begin{tcolorbox}[colback=orange!8, colframe=orange!60, boxrule=0.4pt, sharp corners, fontupper=\footnotesize]
+    \textbf{机器列 vs 文本列}：机器列（阶段/默认值/兼容性）由代码解析权威源，100\% 准确；文本列由 LLM 或正则+机翻生成，无 key 时不准——需按 \texttt{Prompt.md} 四阶段流水线联网优化。
+    \end{tcolorbox}
+
+    \column{0.48\textwidth}
+    \textbf{数据流}：
+    \begin{center}
+    \begin{tikzpicture}[node distance=0.5cm, every node/.style={font=\scriptsize}]
+      \node[draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.5cm] (go) {kube\_features.go};
+      \node[draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.5cm, below=of go] (ch) {CHANGELOG / pkg.go.dev};
+      \node[draw, rounded corners, fill=blue!10, minimum width=2.4cm, minimum height=0.5cm, below=of ch] (blog) {博客 URL};
+      \node[draw, rounded corners, fill=green!15, minimum width=2.4cm, minimum height=0.5cm, right=1.6cm of go] (fc) {特性变更 xlsx};
+      \node[draw, rounded corners, fill=green!15, minimum width=2.4cm, minimum height=0.5cm, right=1.6cm of blog] (va) {版本分析 xlsx};
+      \draw[-Stealth] (go) -- (fc);
+      \draw[-Stealth, dashed] (ch) -- (fc) node[midway, above, font=\tiny]{回退};
+      \draw[-Stealth] (blog) -- (va);
+    \end{tikzpicture}
+    \end{center}
+    \footnotesize\textcolor{gray}{权威源优先：\texttt{kube\_features.go} 直接来自 K8s 源码，是阶段/默认值/移除的 100\% 权威定义。}
+  \end{columns}
+
+  \vspace{0.5em}
+  \begin{center}
+  \footnotesize\textcolor{gray}{详细逻辑见 \texttt{logic.md}；文本优化流程见 \texttt{Prompt.md}；参考文本见 \texttt{AI\_agent/k8sv1.35-v1.36.xlsx}。}
+  \end{center}
+\end{frame}
+
+\end{document}
