@@ -1,0 +1,101 @@
+package log
+
+import (
+	"fmt"
+	"io"
+	golog "log"
+	"os"
+	"sync/atomic"
+	"time"
+)
+
+// D controls whether we should output debug logs. If true, we do, once set
+// it can not be unset.
+var D = &d{}
+
+type d struct {
+	on atomic.Bool
+}
+
+// Set enables debug logging.
+func (d *d) Set() {
+	d.on.Store(true)
+}
+
+// Clear disables debug logging.
+func (d *d) Clear() {
+	d.on.Store(false)
+}
+
+// Value returns if debug logging is enabled.
+func (d *d) Value() bool {
+	return d.on.Load()
+}
+
+// RFC3339Milli doesn't exist, invent it here.
+func clock() string { return time.Now().Format("2006-01-02T15:04:05.000Z07:00") }
+
+// logf calls log.Printf prefixed with level.
+func logf(level, format string, v ...interface{}) {
+	golog.Print(clock(), level, fmt.Sprintf(format, v...))
+}
+
+// log calls log.Print prefixed with level.
+func log(level string, v ...interface{}) {
+	golog.Print(clock(), level, fmt.Sprint(v...))
+}
+
+// Debug is equivalent to log.Print(), but prefixed with "[DEBUG] ". It only outputs something
+// if D is true.
+func Debug(v ...interface{}) {
+	if !D.Value() {
+		return 
+	}
+	log(debug, v...)
+}
+
+// Debugf is equivalent to log.Printf(), but prefixed with "[DEBUG] ". It only outputs something
+// if D is true.
+func Debugf(format string, v ...interface{}) {
+	if !D.Value() {
+		return
+	}
+	logf(debug, format, v...)
+}
+
+// Info is equivalent to log.Print, but prefixed with "[INFO] ".
+func Info(v ...interface{}) { log(info, v...) }
+
+// Infof is equivalent to log.Printf, but prefixed with "[INFO] ".
+func Infof(format string, v ...interface{}){ logf(info, format, v...) }
+
+// Warning is equivalent to log.Print, but prefixed with "[WARNING] ".
+func Warning(v ...interface{}){ log(warning, v...) }
+
+// Warningf is equivalent to log.Printf, but prefixed with "[WARNING] ".
+func Warningf(format string, v ...interface{}){ logf(warning, format, v...) }
+
+// Error is equivalent to log.Print, but prefixed with "[ERROR] ".
+func Error(v ...interface{}){ log(err, v...) }
+
+// Errorf is equivalent to log.Printf, but prefixed with "[ERROR] ".
+func Errorf(format string, v ...interface{}){ logf(err, format, v...) }
+
+// Fatal is equivalent to log.Print, but prefixed with "[FATAL] ", and calling
+// os.Exit(1).
+func Fatal(v ...interface{}){ log(fatal, v...); os.Exit(1) }
+
+// Fatalf is equivalent to log.Printf, but prefixed with "[FATAL]", and calling
+// os.Exit(1)
+func Fatalf(format string, v ...interface{}){ logf(fatal, format, v ...); os.Exit(1) }
+
+// Discard sets the log output to /dev/null.
+func Discard() { golog.SetOutput(io.Discard) }
+
+const (
+	debug   = "[DEBUG] "
+	err     = "[ERROR] "
+	fatal   = "[FATAL] "
+	info    = "[INFO] "
+	warning = "[WARNING] "
+)
